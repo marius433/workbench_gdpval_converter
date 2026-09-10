@@ -49,7 +49,9 @@ class LLMConfig:
     base_url: str | None = field(default_factory=_default_base_url)
     api_key: str | None = field(default_factory=_default_api_key)
     temperature: float = 1.0
-    max_tokens: int = 16_000
+    # Reasoning models spend part of this budget on hidden reasoning tokens
+    # before any text is emitted; a large candidate set needs real headroom.
+    max_tokens: int = 48_000
 
 
 class LLMClient:
@@ -83,9 +85,16 @@ class LLMClient:
                 {"role": "user", "content": user},
             ],
         )
-        content = resp.choices[0].message.content
+        choice = resp.choices[0]
+        content = choice.message.content
         if not content:
-            raise RuntimeError("LLM returned an empty completion")
+            usage = getattr(resp, "usage", None)
+            raise RuntimeError(
+                "LLM returned an empty completion "
+                f"(finish_reason={choice.finish_reason!r}, usage={usage!r}); "
+                "if finish_reason is 'length', the max_tokens budget was likely "
+                "consumed by reasoning tokens — raise LLMConfig.max_tokens"
+            )
         return str(content)
 
 

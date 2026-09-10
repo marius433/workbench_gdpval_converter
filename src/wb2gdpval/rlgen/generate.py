@@ -173,10 +173,20 @@ def generate_candidates(
     task_id, user, meta = build_context(task_dir, n, category_from=category_from)
     client = client or LLMClient()
     completion = client.complete(_SYSTEM, user)
-    candidates = parse_candidates(completion, task_id, meta["occupation"], meta["sector"])
 
+    # Persist the raw completion before parsing: a malformed completion must
+    # stay inspectable (and paid-for tokens must never be lost to a parse error).
     dest = os.path.join(out_dir, task_id)
     os.makedirs(dest, exist_ok=True)
+    with open(os.path.join(dest, "raw_completion.txt"), "w") as f:
+        f.write(completion)
+    try:
+        candidates = parse_candidates(completion, task_id, meta["occupation"], meta["sector"])
+    except ValueError as e:
+        raise ValueError(
+            f"{e} — raw completion kept at {os.path.join(dest, 'raw_completion.txt')}"
+        ) from e
+
     with open(os.path.join(dest, "candidates.json"), "w") as f:
         json.dump([c.to_dict() for c in candidates], f, indent=1)
     with open(os.path.join(dest, "generation_meta.json"), "w") as f:
@@ -192,8 +202,6 @@ def generate_candidates(
             f,
             indent=1,
         )
-    with open(os.path.join(dest, "raw_completion.txt"), "w") as f:
-        f.write(completion)
     return GenerationResult(
         source_task_id=task_id,
         refdir=meta["refdir"],

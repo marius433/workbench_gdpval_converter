@@ -88,6 +88,18 @@ class TestFactResolution:
         )
         assert not missing.ok
 
+    def test_references_prefix_is_normalised(self, refdir: str) -> None:
+        # Models often write paths with the exported references/ (or sandbox
+        # reference/) prefix; both must resolve to the same file.
+        for prefixed in ("references/02_data/sales.xlsx", "reference/02_data/sales.xlsx"):
+            r = resolve_fact(FactRef(name="q1", file=prefixed, sheet="Data", cell="B2"), refdir)
+            assert r.ok and r.value == 100, r.detail
+
+    def test_path_traversal_is_refused(self, refdir: str) -> None:
+        r = resolve_fact(FactRef(name="x", file="../grader/grading.yaml", quote="rubric"), refdir)
+        assert not r.ok
+        assert "escapes" in r.detail
+
     def test_bad_refs_fail_with_detail(self, refdir: str) -> None:
         assert not resolve_fact(
             FactRef(name="x", file="nope.xlsx", sheet="D", cell="A1"), refdir

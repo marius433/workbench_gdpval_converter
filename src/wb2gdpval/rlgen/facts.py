@@ -73,9 +73,27 @@ def _read_cell(path: str, sheet: str, cell: str) -> tuple[object, str | None]:
     return value, None
 
 
+def _normalise_ref_path(file: str) -> str:
+    """Model-written paths may carry the exported ``references/`` (or sandbox
+    ``reference/``) prefix; the canonical key is the path relative to the
+    reference dir. Also refuses path traversal outside it."""
+    rel = file.replace("\\", "/").lstrip("/")
+    first, _, rest = rel.partition("/")
+    if first in ("references", "reference") and rest:
+        rel = rest
+    norm = os.path.normpath(rel)
+    if norm.startswith(".."):
+        raise ValueError(f"ref path escapes the reference dir: {file!r}")
+    return norm
+
+
 def resolve_fact(ref: FactRef, refdir: str) -> ResolvedFact:
     """Resolve one FactRef against the reference directory."""
-    path = os.path.join(refdir, ref.file)
+    try:
+        rel = _normalise_ref_path(ref.file)
+    except ValueError as e:
+        return ResolvedFact(ref, None, False, str(e))
+    path = os.path.join(refdir, rel)
     if not os.path.isfile(path):
         return ResolvedFact(ref, None, False, f"file not found: {ref.file}")
     if ref.cell:
