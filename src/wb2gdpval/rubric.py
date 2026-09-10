@@ -22,7 +22,8 @@ PLUMBING = [
     r"The environment contains[^.]*?\.[ \t]*\n?",
     r"Inspect the actual[\s]+output and (?:the )?source files, not just the transcript\.[ \t]*\n?",
     r"Do not lower the score because the transcript is missing[^.]*\.[ \t]*\n?",
-    r"Do not be swayed by the (?:model|agent)'?s own framing or claims about what it did\.[ \t]*\n?",
+    r"Do not be swayed by the (?:model|agent)'?s own framing"
+    r" or claims about what it did\.[ \t]*\n?",
     r"The transcript is your source for reasoning quality[^.]*\.[ \t]*\n?",
     r"The agent also writes a[\s]*`?report\.json`?\.[ \t]*\n?",
     r"`?report\.json`? is the agent'?s own index of the positions it took[^.]*\.[ \t]*\n?",
@@ -138,8 +139,6 @@ def load_rubrics(grading_path: str) -> RubricBundle:
     if rb.residual:
         kinds = sorted({r["why"] for r in rb.residual})
         rb.flags.append(
-            "rubric residual coupling after de-coupling ("
-            + "; ".join(kinds)
-            + "); needs ME review"
+            "rubric residual coupling after de-coupling (" + "; ".join(kinds) + "); needs ME review"
         )
     return rb

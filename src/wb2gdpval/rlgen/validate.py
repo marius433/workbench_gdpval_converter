@@ -131,8 +131,7 @@ def validate_check(check: CheckSpec, refdir: str) -> CheckValidation:
     if abs(computed - float(check.expected)) > check.tolerance:
         v.ok = False
         v.reasons.append(
-            f"derivation computes {computed:.6g}, expected {check.expected} "
-            f"± {check.tolerance}"
+            f"derivation computes {computed:.6g}, expected {check.expected} ± {check.tolerance}"
         )
     return v
 

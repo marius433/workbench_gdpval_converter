@@ -29,11 +29,7 @@ class AcceptanceReport:
 
 
 def _task_dirs(export_dir: str) -> list[str]:
-    return sorted(
-        d
-        for d in os.listdir(export_dir)
-        if os.path.isdir(os.path.join(export_dir, d))
-    )
+    return sorted(d for d in os.listdir(export_dir) if os.path.isdir(os.path.join(export_dir, d)))
 
 
 def _check_structure(export_dir: str, report: AcceptanceReport) -> None:
@@ -56,9 +52,7 @@ def _check_structure(export_dir: str, report: AcceptanceReport) -> None:
             report.failures.append(f"{d}: missing gold/")
 
 
-def _check_counts(
-    export_dir: str, cfg: BundleConfig, mode: str, report: AcceptanceReport
-) -> None:
+def _check_counts(export_dir: str, cfg: BundleConfig, mode: str, report: AcceptanceReport) -> None:
     with open(os.path.join(export_dir, "manifest.json")) as f:
         manifest = json.load(f)
     expected = cfg.expected.get(mode)
@@ -97,8 +91,7 @@ def _check_anchor(export_dir: str, anchor: AnchorSpec, report: AcceptanceReport)
             report.failures.append(f"anchor {anchor.task_id}: prompt contains {needle!r}")
     if anchor.deliverables is not None and task["deliverables"] != anchor.deliverables:
         report.failures.append(
-            f"anchor {anchor.task_id}: deliverables {task['deliverables']} != "
-            f"{anchor.deliverables}"
+            f"anchor {anchor.task_id}: deliverables {task['deliverables']} != {anchor.deliverables}"
         )
     refs = set(task["reference_files"])
     for name in anchor.references_exclude:
@@ -110,9 +103,7 @@ def _check_anchor(export_dir: str, anchor: AnchorSpec, report: AcceptanceReport)
         report.failures.append(f"anchor {anchor.task_id}: gold is empty")
 
 
-def check_export(
-    export_dir: str, cfg: BundleConfig | None, mode: str
-) -> AcceptanceReport:
+def check_export(export_dir: str, cfg: BundleConfig | None, mode: str) -> AcceptanceReport:
     """Run all applicable acceptance checks on a written export."""
     report = AcceptanceReport()
     _check_structure(export_dir, report)

@@ -1,0 +1,53 @@
+# Per-bundle configuration — one block per bundle, keyed by the bundle
+# directory basename. A new bundle needs an entry here, not code changes.
+#
+# Workflow: *first run observes, second run asserts*. Run an unconfigured (or
+# expected-less) bundle once, inspect the export, then record the counts and
+# an anchor task below — every subsequent run is checked against them and the
+# CLI exits non-zero on drift.
+#
+# Fields:
+#   category_from   pack-layout bundle of the same tasks, to join `category`
+#                   back when the review format has dropped it (lookup of
+#                   recorded fact, never a guess). Relative paths resolve
+#                   against this file's directory.
+#   occupation_map  extra occupation_map.json (the bundle root's own map is
+#                   always loaded when present).
+#   task_glob       glob for task directories inside the bundle (default ME-*).
+#   expected        recorded accountable counts per mode: tasks/clean/flagged.
+#   anchors         hand-picked tasks with distinctive assertions, checked on
+#                   every run (skipped when the task id is absent, e.g. for
+#                   split children).
+
+bundles:
+  # ME-A-01, review-format revision (flat user_prompt/ grader/ reference/
+  # layout, dirs suffixed _vF). The pack-layout bundle of the same tasks
+  # supplies `category` for all 50.
+  20260902_workbench_ME_nikita_final:
+    category_from: /Users/marius/Documents/workbench/20260824_ME_Nikita
+    expected:
+      # Recorded 2026-09-10, converter 2.0.0 — byte-identical to the final
+      # accountable single-file run (2026-09-02, converter 1.4.0, _run5).
+      one2one: { tasks: 50, clean: 11, flagged: 39 }
+      # Recorded 2026-09-10, converter 2.0.0 — 34 parents split into 69
+      # children, 16 passed through (incl. P17, whose prompt lists
+      # report.json as a deliverable; excluded from splitting), 30 children
+      # flagged possibly interdependent.
+      split: { tasks: 85, clean: 8, flagged: 77 }
+    anchors:
+      - task_id: ME-A-01-P20
+        prompt_contains:
+          - "Marcus wants the Phase 1 site visit plan"
+        prompt_excludes: ["From:", "To:"]
+        deliverables:
+          - PetroNusa_Phase1_CoveringNote.docx
+          - PetroNusa_Phase1_SiteVisitPlan.xlsx
+        references_exclude:
+          - SiteVisitPlan_Request.docx # consumed brief (was Nadia_SiteVisitPlan_Request.docx)
+        gold_nonempty: true
+
+  # ME-A-01, original pack-layout bundle. Counts from the
+  # PetroNusa_Project_Wayang_50_evals block of the process manual are for
+  # converter 1.x flag semantics; observe and record on first 2.0 run.
+  20260824_ME_Nikita:
+    task_glob: "ME-*"

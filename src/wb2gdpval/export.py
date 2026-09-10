@@ -204,9 +204,7 @@ def _build_manifest(
     n_source_tasks: int,
 ) -> dict[str, object]:
     clean = sum(1 for r in report if not r["flags"])
-    unmapped = sorted(
-        {c.task_id for c in conversions if UNMAPPED in (c.occupation, c.sector)}
-    )
+    unmapped = sorted({c.task_id for c in conversions if UNMAPPED in (c.occupation, c.sector)})
     flag_keys = _FLAG_SUMMARY_KEYS + (_SPLIT_FLAG_SUMMARY_KEYS if mode == MODE_SPLIT else ())
     manifest: dict[str, object] = dict(
         converter_version=__version__,
@@ -222,9 +220,7 @@ def _build_manifest(
         clean=clean,
         flagged=len(report) - clean,
         unmapped_occupations=unmapped,
-        flag_summary={
-            f: sum(1 for r in report if f in str(r["flags"])) for f in flag_keys
-        },
+        flag_summary={f: sum(1 for r in report if f in str(r["flags"])) for f in flag_keys},
     )
     manifest["occupations"] = {
         o: sum(1 for c in conversions if c.occupation == o)
@@ -262,9 +258,7 @@ def _build_manifest(
             "passed_through_unsplit": sum(1 for c in conversions if c.parent_task_id is None),
             "children": sum(1 for c in conversions if c.parent_task_id is not None),
             "interdependent_flagged": sum(
-                1
-                for c in conversions
-                if any("may be interdependent" in f for f in c.flags)
+                1 for c in conversions if any("may be interdependent" in f for f in c.flags)
             ),
         }
     return manifest
@@ -275,11 +269,10 @@ def _write_ship_notes(
 ) -> None:
     occupations = manifest["occupations"]
     sectors = manifest["sectors"]
-    prompt_chars = manifest.get(
-        "prompt_chars", {"min": 0, "max": 0, "outside_band": 0}
-    )
+    prompt_chars = manifest.get("prompt_chars", {"min": 0, "max": 0, "outside_band": 0})
+    residual = manifest["rubric_residual_coupling"]
     assert isinstance(occupations, dict) and isinstance(sectors, dict)
-    assert isinstance(prompt_chars, dict)
+    assert isinstance(prompt_chars, dict) and isinstance(residual, dict)
     mode = manifest["mode"]
     mode_line = ""
     if mode == MODE_SPLIT:
@@ -293,9 +286,10 @@ def _write_ship_notes(
             "share their parent's references and prompt; only the scope note and the gold "
             "slice differ. Review interdependence flags before shipping.\n"
         )
+    source_path = os.path.abspath(bundle_dir)
     ship = f"""# Ship notes — {bundle_name}
 
-Converter {manifest["converter_version"]} (mode: {mode}). Source bundle: `{os.path.abspath(bundle_dir)}`.
+Converter {manifest["converter_version"]} (mode: {mode}). Source bundle: `{source_path}`.
 Generated {manifest["converted_at"]}. Read this before sending the export anywhere.
 
 ## What this is
@@ -342,8 +336,8 @@ Coverage is depth, not breadth: {len(occupations)} occupations across
 
 - **Rubrics**: all {manifest["rubrics_present"]} carry a rubric, de-coupled from the
   WorkBench harness (agent transcript / report.json / "the environment" removed).
-  {manifest["rubric_residual_coupling"]["tasks"]} tasks retain
-  {manifest["rubric_residual_coupling"]["mentions"]} residual mentions that were
+  {residual["tasks"]} tasks retain
+  {residual["mentions"]} residual mentions that were
   **flagged rather than edited** — see `rubric_residual_coupling` in each
   `task.json`. Note "transcript" is ambiguous in some bundles: interview
   transcripts are domain content, not harness plumbing.

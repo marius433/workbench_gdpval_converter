@@ -45,9 +45,7 @@ def _default_api_key() -> str | None:
 
 @dataclass
 class LLMConfig:
-    model: str = field(
-        default_factory=lambda: os.environ.get("WB2GDPVAL_LLM_MODEL", DEFAULT_MODEL)
-    )
+    model: str = field(default_factory=lambda: os.environ.get("WB2GDPVAL_LLM_MODEL", DEFAULT_MODEL))
     base_url: str | None = field(default_factory=_default_base_url)
     api_key: str | None = field(default_factory=_default_api_key)
     temperature: float = 1.0

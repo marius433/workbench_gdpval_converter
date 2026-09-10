@@ -28,7 +28,8 @@ from .schema import CANDIDATE_JSON_GUIDE, CandidateEnv
 _MAX_CHARS_PER_FILE = 12_000
 _MAX_ROWS_PER_SHEET = 80
 
-_SYSTEM = """You design benchmark tasks for evaluating AI agents on real knowledge work.
+_SYSTEM = (
+    """You design benchmark tasks for evaluating AI agents on real knowledge work.
 
 You are given one existing consulting assignment (the "source task"): its prompt and the
 full contents of its data room (the reference files). Your job is to propose NEW
@@ -54,11 +55,12 @@ Hard requirements for every candidate:
 - 4 to 8 checks per candidate; include one file_exists check per deliverable.
 
 Return ONLY a JSON object in this shape:
-""" + CANDIDATE_JSON_GUIDE
+"""
+    + CANDIDATE_JSON_GUIDE
+)
 
-def _user_message(
-    task_id: str, occupation: str, prompt: str, references: list[str], n: int
-) -> str:
+
+def _user_message(task_id: str, occupation: str, prompt: str, references: list[str], n: int) -> str:
     # Assembled by f-string (not str.format) because the prompt and file dumps
     # are untrusted text that may contain brace characters.
     refs = "\n\n".join(references)

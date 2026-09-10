@@ -25,9 +25,7 @@ def select_gold(gold_dir: str, deliverable_names: set[str]) -> tuple[list[str], 
     candidates = [
         f
         for f in sorted(os.listdir(gold_dir))
-        if os.path.isfile(os.path.join(gold_dir, f))
-        and not f.startswith("._")
-        and f != ".DS_Store"
+        if os.path.isfile(os.path.join(gold_dir, f)) and not f.startswith("._") and f != ".DS_Store"
     ]
     kept: list[str] = []
     quarantined: list[str] = []

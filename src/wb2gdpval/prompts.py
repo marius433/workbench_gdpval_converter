@@ -10,9 +10,7 @@ from .textio import clean_email, docx_text, msg_text
 # Deliverable filename shape recognised in prompts.
 FNAME = r"[A-Za-z0-9_\-]+\.(?:docx|xlsx|pptx|pdf|md|csv)"
 
-_SAVE_AS = re.compile(
-    r"[Ss]ave your deliverable\(?s?\)? as (.+?)(?:\bin your output|$)", re.S
-)
+_SAVE_AS = re.compile(r"[Ss]ave your deliverable\(?s?\)? as (.+?)(?:\bin your output|$)", re.S)
 _DELIVERABLES_HEADING = re.compile(r"Deliverables?\s*:(.+?)(?:\n\n|$)", re.S)
 
 

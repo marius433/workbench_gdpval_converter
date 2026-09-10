@@ -77,7 +77,11 @@ def _flag_dangling_folders(
     for folder in sorted(set(_FOLDER_POINTER.findall(prompt))):
         if folder in present:
             continue
-        why = "consumed (brief inlined)" if folder in consumed_folders else "not present in references"
+        why = (
+            "consumed (brief inlined)"
+            if folder in consumed_folders
+            else "not present in references"
+        )
         flags.append(f"prompt cites folder {folder}/ - {why}; pointer dangling")
 
 

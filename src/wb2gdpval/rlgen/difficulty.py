@@ -69,16 +69,22 @@ def gate_env(
     try:
         score = _eval_env(env_dir, model, log_dir)
     except Exception as e:
-        return GateResult(env_id=env_id, model=model, score=None, solved=False,
-                          discarded=False, error=f"{type(e).__name__}: {e}")
+        return GateResult(
+            env_id=env_id,
+            model=model,
+            score=None,
+            solved=False,
+            discarded=False,
+            error=f"{type(e).__name__}: {e}",
+        )
     solved = score >= solve_threshold
-    result = GateResult(env_id=env_id, model=model, score=score, solved=solved,
-                        discarded=False)
+    result = GateResult(env_id=env_id, model=model, score=score, solved=solved, discarded=False)
     with open(os.path.join(env_dir, "gate_result.json"), "w") as f:
         json.dump(asdict(result) | {"solve_threshold": solve_threshold}, f, indent=1)
     if solved and discard:
-        discard_root = os.path.join(os.path.dirname(os.path.normpath(env_dir)),
-                                    "discarded_too_easy")
+        discard_root = os.path.join(
+            os.path.dirname(os.path.normpath(env_dir)), "discarded_too_easy"
+        )
         os.makedirs(discard_root, exist_ok=True)
         shutil.move(env_dir, os.path.join(discard_root, env_id))
         result.discarded = True
@@ -97,8 +103,9 @@ def gate_all(
         env_dir = os.path.join(envs_root, name)
         if not os.path.isfile(os.path.join(env_dir, "task.py")):
             continue
-        results.append(gate_env(env_dir, model=model,
-                                solve_threshold=solve_threshold, discard=discard))
+        results.append(
+            gate_env(env_dir, model=model, solve_threshold=solve_threshold, discard=discard)
+        )
     with open(os.path.join(envs_root, "gate_report.json"), "w") as f:
         json.dump([asdict(r) for r in results], f, indent=1)
     return results

@@ -162,8 +162,7 @@ def export_env(candidate: CandidateEnv, refdir: str, envs_root: str) -> str:
     """
     if not candidate.validation or not candidate.validation.get("valid"):
         raise ValueError(
-            f"candidate {candidate.env_id} has not passed validation; "
-            "run the validate stage first"
+            f"candidate {candidate.env_id} has not passed validation; run the validate stage first"
         )
     dest = os.path.join(envs_root, candidate.env_id)
     if os.path.exists(dest):

@@ -59,7 +59,13 @@ def msg_text(path: str) -> str | None:
 
 def clean_email(text: str) -> str:
     """Strip an email's header block: drop everything through the last header
-    label/value found in the first 16 lines. The body is never edited."""
+    label/value found in the first 16 lines. The body proper is never edited.
+
+    Note the "value may sit on the following non-empty line" rule means the
+    first non-empty line after the header block — in practice the salutation
+    ("Priya,") — is consumed with the headers. This is the behaviour the
+    accountable ME-A-01 run shipped with and is relied on by its recorded
+    outputs; do not change it without re-baselining every bundle."""
     lines = [line.rstrip() for line in text.splitlines()]
     hdr = re.compile(r"^(From|To|Subject|Cc|Date|Sent)\s*:", re.I)
     cut = 0

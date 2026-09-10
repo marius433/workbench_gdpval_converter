@@ -89,7 +89,9 @@ def _cmd_rlgen_generate(args: argparse.Namespace) -> int:
         client=LLMClient(config),
         category_from=args.category_from,
     )
-    print(f"{len(result.candidates)} candidate(s) -> {os.path.join(args.out, result.source_task_id)}")
+    print(
+        f"{len(result.candidates)} candidate(s) -> {os.path.join(args.out, result.source_task_id)}"
+    )
     print("next: wb2gdpval rlgen validate " + os.path.join(args.out, result.source_task_id))
     return 0
 
@@ -142,10 +144,16 @@ def _cmd_rlgen_gate(args: argparse.Namespace) -> int:
         discard=not args.no_discard,
     )
     for r in results:
-        status = "ERROR " + (r.error or "") if r.error else (
-            "DISCARDED (solved first try)" if r.discarded
-            else "solved (kept)" if r.solved
-            else "kept"
+        status = (
+            "ERROR " + (r.error or "")
+            if r.error
+            else (
+                "DISCARDED (solved first try)"
+                if r.discarded
+                else "solved (kept)"
+                if r.solved
+                else "kept"
+            )
         )
         score = f"{r.score:.2f}" if r.score is not None else "-"
         print(f"  {r.env_id}: score={score} {status}")

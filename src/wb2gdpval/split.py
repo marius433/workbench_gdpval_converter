@@ -44,10 +44,7 @@ def _stem(name: str) -> str:
 
 def _mentions(text: str, filename: str) -> bool:
     """True if text mentions the filename or its stem as a whole token."""
-    for needle in (filename, _stem(filename)):
-        if re.search(re.escape(needle), text):
-            return True
-    return False
+    return any(re.search(re.escape(needle), text) for needle in (filename, _stem(filename)))
 
 
 def _child_id(parent_id: str, index: int) -> str:
@@ -60,14 +57,20 @@ def split_task(parent: TaskConversion) -> list[TaskConversion]:
     A task with zero or one deliverable passes through unchanged (same id).
     Children carry ``parent_task_id`` and ``sibling_deliverables`` provenance.
     """
-    if len(parent.deliverables) <= 1:
+    # report.json is harness plumbing, never a GDPval deliverable — a prompt
+    # that lists it must not produce a child graded on it. (Mode A keeps the
+    # parsed list untouched; only the split acts on the cleaned view.)
+    real = [d for d in parent.deliverables if d.lower() != "report.json"]
+    if len(real) <= 1:
         return [parent]
 
     children: list[TaskConversion] = []
-    for i, target in enumerate(parent.deliverables, start=1):
-        siblings = [d for d in parent.deliverables if d != target]
+    for i, target in enumerate(real, start=1):
+        siblings = [d for d in real if d != target]
         flags = list(parent.flags)
-        flags.append(f"split from {parent.task_id} ({len(parent.deliverables)} deliverables)")
+        flags.append(f"split from {parent.task_id} ({len(real)} deliverables)")
+        if len(real) != len(parent.deliverables):
+            flags.append("report.json listed as a deliverable in prompt; excluded from split")
 
         # Gold slice: exact name match first, then stem match (renderings).
         gold = [g for g in parent.gold if g.name == target]
@@ -77,8 +80,8 @@ def split_task(parent: TaskConversion) -> list[TaskConversion]:
         if not gold:
             flags.append(f"gold missing for split deliverable {target}")
 
-        prompt = parent.prompt + "\n\n" + _SCOPE_NOTE.format(
-            header=SCOPE_NOTE_HEADER, target=target
+        prompt = (
+            parent.prompt + "\n\n" + _SCOPE_NOTE.format(header=SCOPE_NOTE_HEADER, target=target)
         )
 
         # Rubric travels whole with a scope preamble; slicing prose per

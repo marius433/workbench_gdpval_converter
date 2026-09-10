@@ -52,7 +52,7 @@ strict = true
 files = ["src"]
 
 [[tool.mypy.overrides]]
-module = ["mammoth", "docx", "docx.*"]
+module = ["mammoth", "docx", "docx.*", "inspect_ai", "inspect_ai.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
