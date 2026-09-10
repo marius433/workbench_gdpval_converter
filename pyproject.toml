@@ -1,0 +1,60 @@
+[project]
+name = "wb2gdpval"
+version = "2.0.0"
+description = "Convert WorkBench task bundles into GDPval-format packages and RL environments"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Toloka" }]
+dependencies = [
+    "mammoth>=1.6",
+    "openpyxl>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# LLM access for Mode C2 generation (OpenAI-compatible client: litellm proxy,
+# OpenRouter, or any base_url + key).
+llm = ["openai>=1.40"]
+# Running the Mode C2 difficulty gate (executes generated inspect_ai tasks).
+inspect = ["inspect-ai>=0.3.46"]
+
+[project.scripts]
+wb2gdpval = "wb2gdpval.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "python-docx>=1.1",
+    "ruff>=0.6",
+    "types-openpyxl",
+    "types-pyyaml",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wb2gdpval"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["mammoth", "docx", "docx.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
