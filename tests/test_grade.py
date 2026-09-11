@@ -129,6 +129,39 @@ def test_judge_export_and_elo(graded_export: str) -> None:
     assert ratings["gold"] >= ratings["openrouter/worker-x"]
 
 
+def test_sparse_pairs_connected_and_small() -> None:
+    from wb2gdpval.grade.judge import _select_pairs
+
+    workers = ["w1", "w2", "w3", "w4"]
+    players = workers + ["gold"]
+    pairs = _select_pairs(players, workers, "sparse")
+    # every worker vs gold + a ring over workers
+    assert ("w1", "gold") in pairs and ("w4", "gold") in pairs
+    assert len(pairs) == 8  # 4 gold pairs + 4 ring pairs (vs C(5,2)=10 full)
+    assert _select_pairs(["w1", "w2", "gold"], ["w1", "w2"], "sparse") == [
+        ("w1", "gold"),
+        ("w2", "gold"),
+        ("w1", "w2"),
+    ]
+    with pytest.raises(ValueError):
+        _select_pairs(players, workers, "random")
+
+
+def test_judge_skips_players_without_submission(graded_export: str) -> None:
+    # 'ghost' has no runs dir: no pair involving it may be judged, and the
+    # remaining players are still judged normally.
+    summary = judge_export(
+        graded_export,
+        FakeJudge(),  # type: ignore[arg-type]
+        workers=["openrouter/worker-x", "ghost"],
+        pairs="sparse",
+    )
+    assert summary["errors"] == 0
+    with open(os.path.join(graded_export, "judgments.jsonl")) as f:
+        rows = [json.loads(line) for line in f]
+    assert rows and not any("ghost" in (r["player_a"], r["player_b"]) for r in rows)
+
+
 def test_submission_text_excludes_report_json(tmp_path: Path) -> None:
     d = tmp_path / "sub"
     d.mkdir()

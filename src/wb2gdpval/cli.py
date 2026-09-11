@@ -197,6 +197,7 @@ def _cmd_grade_judge(args: argparse.Namespace) -> int:
         client,
         workers=args.workers.split(","),
         task_ids=args.task or None,
+        pairs=args.pairs,
     )
     print(json.dumps(summary, indent=1))
     return 0 if not summary["errors"] else 1
@@ -321,6 +322,12 @@ def build_parser() -> argparse.ArgumentParser:
     gj.add_argument("--model", help="judge model id (LLM client naming)")
     gj.add_argument("--base-url", help="OpenAI-compatible endpoint")
     gj.add_argument("--task", action="append", help="limit to task id (repeatable)")
+    gj.add_argument(
+        "--pairs",
+        choices=("full", "sparse"),
+        default="full",
+        help="pair strategy: full pairwise, or sparse (gold-vs-each + worker ring)",
+    )
     gj.set_defaults(func=_cmd_grade_judge)
 
     ge = grsub.add_parser("elo", help="Bradley-Terry fit + hardness report")

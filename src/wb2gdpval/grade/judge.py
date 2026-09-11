@@ -34,6 +34,22 @@ def _pair_key(task_id: str, a: str, b: str, swapped: bool) -> str:
     return f"{task_id}|{a}|{b}|{int(swapped)}"
 
 
+def _select_pairs(players: list[str], workers: list[str], strategy: str) -> list[tuple[str, str]]:
+    """Pairs to judge for one task, per strategy (see judge_export)."""
+    if strategy == "full":
+        return list(combinations(players, 2))
+    if strategy != "sparse":
+        raise ValueError(f"unknown pair strategy {strategy!r}")
+    pairs: list[tuple[str, str]] = []
+    if GOLD in players:
+        pairs.extend((w, GOLD) for w in workers)
+    if len(workers) == 2:
+        pairs.append((workers[0], workers[1]))
+    elif len(workers) > 2:
+        pairs.extend((workers[i], workers[(i + 1) % len(workers)]) for i in range(len(workers)))
+    return pairs
+
+
 def _judge_user(prompt: str, rubric: str, text_a: str, text_b: str) -> str:
     return (
         f"THE ASSIGNMENT:\n{prompt}\n\n"
@@ -52,8 +68,19 @@ def judge_export(
     include_gold: bool = True,
     max_prompt_chars: int = 8_000,
     max_rubric_chars: int = 12_000,
+    pairs: str = "full",
 ) -> dict[str, int]:
-    """Judge all pairs for the selected tasks. Returns a summary of counts."""
+    """Judge pairs for the selected tasks. Returns a summary of counts.
+
+    ``pairs``:
+    - ``full`` — every player pair (quadratic in players).
+    - ``sparse`` — every worker vs gold (the hardness anchor) plus a ring
+      over the workers, which keeps the Bradley-Terry comparison graph
+      connected at ~2 pairs per worker instead of all C(n,2).
+
+    A player with no submission for a task (failed or absent run) is left
+    out of that task's pairs rather than judged as an empty document.
+    """
     rows = load_rows(export_dir, task_ids)
     out_path = os.path.join(export_dir, "judgments.jsonl")
     done: set[str] = set()
@@ -63,7 +90,6 @@ def judge_export(
                 j = json.loads(line)
                 done.add(_pair_key(j["task_id"], j["player_a"], j["player_b"], j["swapped"]))
 
-    players = list(workers) + ([GOLD] if include_gold else [])
     new, skipped, errors = 0, 0, 0
     with open(out_path, "a") as out:
         for row in rows:
@@ -74,7 +100,9 @@ def judge_export(
             if include_gold:
                 dirs[GOLD] = os.path.join(export_dir, task_id, "gold")
             texts = {p: submission_text(d) for p, d in dirs.items()}
-            for a, b in combinations(players, 2):
+            present_workers = [w for w in workers if texts[w] != "(no submission)"]
+            players = present_workers + ([GOLD] if include_gold else [])
+            for a, b in _select_pairs(players, present_workers, pairs):
                 for swapped in (False, True):
                     if _pair_key(task_id, a, b, swapped) in done:
                         skipped += 1
