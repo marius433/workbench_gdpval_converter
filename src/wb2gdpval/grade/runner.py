@@ -13,26 +13,47 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from dataclasses import dataclass
 
+# The sandbox image is prebuilt once (offline, from vendored wheels) and
+# referenced by tag — inspect tears its per-eval images down after each eval,
+# and a per-eval `build:` makes every run depend on PyPI being reachable from
+# inside the Docker VM, which is exactly what broke a live run.
+SANDBOX_IMAGE = "wb2gdpval-grade:latest"
+
 _DOCKERFILE = """FROM python:3.12-slim
-RUN pip install --no-cache-dir \\
+COPY wheels /wheels
+RUN pip install --no-cache-dir --no-index --find-links=/wheels \\
     python-docx \\
     python-pptx \\
     openpyxl \\
     pandas \\
-    markdown
+    markdown \\
+ && rm -rf /wheels
 WORKDIR /task
 RUN mkdir -p /task/reference /task/output
 """
 
-_COMPOSE = """services:
+_COMPOSE = f"""services:
   default:
-    build: .
+    image: {SANDBOX_IMAGE}
     working_dir: /task
     command: tail -f /dev/null
     init: true
 """
+
+# Populate the wheels dir (once, on the host network) with:
+#   pip download python-docx python-pptx openpyxl pandas markdown \
+#     -d <sandbox>/wheels --only-binary=:all: \
+#     --platform manylinux2014_aarch64 --python-version 3.12
+_WHEELS_HELP = (
+    "sandbox image missing and no vendored wheels to build it from; "
+    "populate {wheels} with `pip download python-docx python-pptx openpyxl "
+    "pandas markdown -d {wheels} --only-binary=:all: "
+    "--platform manylinux2014_aarch64 --python-version 3.12` "
+    "(use a PyPI mirror via -i if files.pythonhosted.org is unreachable)"
+)
 
 _SYSTEM_MESSAGE = (
     "You are completing a professional work assignment. The reference files are in "
@@ -65,6 +86,26 @@ def _sandbox_dir(export_dir: str) -> str:
     with open(os.path.join(d, "compose.yaml"), "w") as f:
         f.write(_COMPOSE)
     return d
+
+
+def ensure_sandbox_image(export_dir: str) -> None:
+    """Build the sandbox image from vendored wheels if it is not present."""
+    if (
+        subprocess.run(
+            ["docker", "image", "inspect", SANDBOX_IMAGE], capture_output=True
+        ).returncode
+        == 0
+    ):
+        return
+    d = _sandbox_dir(export_dir)
+    wheels = os.path.join(d, "wheels")
+    if not os.path.isdir(wheels) or not os.listdir(wheels):
+        raise RuntimeError(_WHEELS_HELP.format(wheels=wheels))
+    result = subprocess.run(
+        ["docker", "build", "-t", SANDBOX_IMAGE, d], capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"sandbox image build failed:\n{result.stderr[-2000:]}")
 
 
 def load_rows(export_dir: str, task_ids: list[str] | None = None) -> list[dict[str, object]]:
@@ -151,6 +192,7 @@ def run_workers(
     max_messages: int = 120,
 ) -> list[RunResult]:
     """Run each worker over the selected tasks; resumable per (model, task)."""
+    ensure_sandbox_image(export_dir)
     rows = load_rows(export_dir, task_ids)
     results: list[RunResult] = []
     for model in models:
