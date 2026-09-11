@@ -25,6 +25,9 @@ from dataclasses import asdict
 
 from .schema import CandidateEnv
 
+# Keys are blinded (result_01, result_02, ...) so their names cannot leak the
+# method; each line's wording comes from the check's report_ask, which the
+# generator wrote to define the quantity without disclosing the approach.
 _REPORT_ADDENDUM = """
 --- Output format requirement (machine-graded) ---
 Alongside your deliverable(s), write a `report.json` in your output directory with
@@ -91,7 +94,7 @@ def programmatic_checks():
                 ok = res.returncode == 0
                 detail.append(f"{c['key']}: exists={ok}")
             elif c["check_type"] == "json_value":
-                v = _reported_value(report, c["key"])
+                v = _reported_value(report, c.get("blinded_key") or c["key"])
                 expected = c.get("expected")
                 if isinstance(expected, (int, float)) and not isinstance(expected, bool):
                     try:
@@ -180,8 +183,13 @@ def export_env(candidate: CandidateEnv, refdir: str, envs_root: str) -> str:
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.copy2(p, dst)
 
-    json_keys = [c.key for c in candidate.checks if c.check_type == "json_value"]
-    addendum = _REPORT_ADDENDUM.format(keys="\n".join(f"- `{k}`" for k in json_keys))
+    key_lines = []
+    for i, c in enumerate((c for c in candidate.checks if c.check_type == "json_value"), start=1):
+        c.blinded_key = f"result_{i:02d}"
+        ask = c.report_ask or c.description
+        unit = f" (unit: {c.unit})" if c.unit else ""
+        key_lines.append(f"- `{c.blinded_key}` — {ask}{unit}")
+    addendum = _REPORT_ADDENDUM.format(keys="\n".join(key_lines))
     env_record = candidate.to_dict()
     env_record["prompt_with_addendum"] = candidate.prompt + "\n" + addendum
 

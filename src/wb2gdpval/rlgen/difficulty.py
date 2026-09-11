@@ -57,6 +57,34 @@ def _eval_env(env_dir: str, model: str, log_dir: str) -> float:
     raise RuntimeError("no mean metric in eval results")
 
 
+def attack_summary(env_dir: str) -> str:
+    """How the attacker did on this env, for adversarial hardening feedback.
+
+    Reads the newest gate log and returns the score plus the scorer's
+    per-check explanation (reported vs expected per key). Best effort — an
+    unreadable log yields a minimal summary from gate_result.json.
+    """
+    result_path = os.path.join(env_dir, "gate_result.json")
+    lines: list[str] = []
+    if os.path.isfile(result_path):
+        with open(result_path) as f:
+            r = json.load(f)
+        lines.append(f"attacker={r.get('model')} score={r.get('score')}")
+    log_dir = os.path.join(env_dir, "gate_logs")
+    try:
+        from inspect_ai.log import read_eval_log
+
+        logs = sorted(f for f in os.listdir(log_dir) if f.endswith(".eval") or f.endswith(".json"))
+        log = read_eval_log(os.path.join(log_dir, logs[-1]))
+        for sample in log.samples or []:
+            for score in (sample.scores or {}).values():
+                if score.explanation:
+                    lines.append(score.explanation)
+    except Exception as e:
+        lines.append(f"(gate log unreadable: {type(e).__name__})")
+    return "\n".join(lines) or "(no attack data)"
+
+
 def gate_env(
     env_dir: str,
     model: str = DEFAULT_ATTACKER,

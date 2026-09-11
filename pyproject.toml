@@ -13,9 +13,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# LLM access for Mode C2 generation (OpenAI-compatible client: litellm proxy,
-# OpenRouter, or any base_url + key).
-llm = ["openai>=1.40"]
+# LLM access for Mode C2 generation and Elo judging (OpenAI-compatible client:
+# litellm proxy, OpenRouter, or any base_url + key). python-pptx renders decks
+# to text for pairwise judging.
+llm = ["openai>=1.40", "python-pptx>=1.0"]
 # Running the Mode C2 difficulty gate (executes generated inspect_ai tasks).
 inspect = ["inspect-ai>=0.3.46"]
 

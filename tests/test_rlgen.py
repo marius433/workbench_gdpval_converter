@@ -16,7 +16,7 @@ from wb2gdpval.rlgen.export_inspect import export_env
 from wb2gdpval.rlgen.facts import resolve_fact
 from wb2gdpval.rlgen.generate import generate_candidates
 from wb2gdpval.rlgen.llm import extract_json
-from wb2gdpval.rlgen.schema import CandidateEnv, CheckSpec, FactRef
+from wb2gdpval.rlgen.schema import CandidateEnv, CheckSpec, DecoySpec, FactRef
 from wb2gdpval.rlgen.validate import (
     safe_eval,
     validate_candidate,
@@ -30,10 +30,25 @@ def refdir(review_bundle: str) -> str:
     return os.path.join(review_bundle, "ME-Z-99-P01_vF", "reference")
 
 
-def _growth_check(expected: float = 50.0, derivation: str = "(q2 - q1) / q1 * 100") -> CheckSpec:
+def _growth_check(
+    expected: float = 50.0,
+    derivation: str = "(q2 - q1) / q1 * 100",
+    decoy_derivation: str | None = "q3 / q1 * 100",  # naive path: 60, outside ±0.1
+) -> CheckSpec:
+    decoy = (
+        DecoySpec(
+            description="uses the Q3 figure the anomaly invalidates",
+            derivation=decoy_derivation,
+            refs=[FactRef(name="q3", file="02_data/sales.xlsx", sheet="Data", cell="B4")],
+        )
+        if decoy_derivation
+        else None
+    )
     return CheckSpec(
         key="growth_pct",
         description="Q1->Q2 growth",
+        report_ask="State the quarter-on-quarter sales growth.",
+        unit="pct",
         expected=expected,
         tolerance=0.1,
         derivation=derivation,
@@ -41,6 +56,7 @@ def _growth_check(expected: float = 50.0, derivation: str = "(q2 - q1) / q1 * 10
             FactRef(name="q1", file="02_data/sales.xlsx", sheet="Data", cell="B2"),
             FactRef(name="q2", file="02_data/sales.xlsx", sheet="Data", cell="B3"),
         ],
+        decoy=decoy,
     )
 
 
@@ -121,6 +137,7 @@ class TestValidation:
                 CheckSpec(
                     key="q3_driver_named",
                     description="anomaly driver grounded in the workbook",
+                    report_ask="Name the driver of the Q3 result.",
                     expected="warehouse outage",
                     refs=[FactRef(name="d", file="02_data/sales.xlsx", quote="warehouse outage")],
                 ),
@@ -161,6 +178,41 @@ class TestValidation:
         assert not record["valid"]
         assert any("minimum" in r for r in record["reasons"])
 
+    def test_decoy_inside_tolerance_rejects_check(self, refdir: str) -> None:
+        # A "decoy" that computes the correct answer is not a trap.
+        c = _growth_check(decoy_derivation="(q2 - q1) / q1 * 100")
+        v = validate_check(c, refdir)
+        assert not v.ok
+        assert any("not a real trap" in r for r in v.reasons)
+
+    def test_unresolvable_decoy_fact_rejects_check(self, refdir: str) -> None:
+        c = _growth_check()
+        assert c.decoy is not None
+        c.decoy.refs[0] = FactRef(name="q3", file="02_data/sales.xlsx", sheet="Data", cell="Z99")
+        v = validate_check(c, refdir)
+        assert not v.ok
+
+    def test_candidate_without_decoys_is_rejected(self, refdir: str) -> None:
+        cand = _candidate(
+            [
+                _growth_check(decoy_derivation=None),
+                _growth_check(decoy_derivation=None),
+                CheckSpec(key="growth_memo.docx", description="", check_type="file_exists"),
+            ]
+        )
+        record = validate_candidate(cand, refdir)
+        assert not record["valid"]
+        assert any("decoy" in r for r in record["reasons"])
+
+    def test_missing_report_ask_is_rejected(self, refdir: str) -> None:
+        c = _growth_check()
+        c.report_ask = ""
+        cand = _candidate(
+            [c, CheckSpec(key="growth_memo.docx", description="", check_type="file_exists")]
+        )
+        record = validate_candidate(cand, refdir)
+        assert any("report_ask" in r for r in record["reasons"])
+
 
 class FakeClient:
     """Stands in for LLMClient: returns a canned completion, no network."""
@@ -194,10 +246,24 @@ def _canned_completion() -> str:
                         {
                             "key": "growth_pct",
                             "description": "growth",
+                            "report_ask": "State the sales growth between the first two quarters.",
+                            "unit": "pct",
                             "check_type": "json_value",
                             "expected": 50.0,
                             "tolerance": 0.1,
                             "derivation": "(q2 - q1) / q1 * 100",
+                            "decoy": {
+                                "description": "naive path via Q3",
+                                "derivation": "q3 / q1 * 100",
+                                "refs": [
+                                    {
+                                        "name": "q3",
+                                        "file": "02_data/sales.xlsx",
+                                        "sheet": "Data",
+                                        "cell": "B4",
+                                    }
+                                ],
+                            },
                             "refs": [
                                 {
                                     "name": "q1",
@@ -216,6 +282,7 @@ def _canned_completion() -> str:
                         {
                             "key": "q3_driver",
                             "description": "driver",
+                            "report_ask": "Name the driver of the Q3 result.",
                             "check_type": "json_value",
                             "expected": "warehouse outage",
                             "refs": [
@@ -269,7 +336,16 @@ class TestGenerateAndExport:
         with open(os.path.join(env_dir, "env.json")) as f:
             env = json.load(f)
         assert "report.json" in env["prompt_with_addendum"]
-        assert "`growth_pct`" in env["prompt_with_addendum"]
+        # Keys are blinded: the agent sees result_NN and the report_ask wording,
+        # never the descriptive internal key.
+        addendum = env["prompt_with_addendum"]
+        assert "`result_01`" in addendum and "`result_02`" in addendum
+        assert "growth_pct" not in addendum
+        assert "State the sales growth between the first two quarters." in addendum
+        assert "(unit: pct)" in addendum
+        with open(os.path.join(env_dir, "checks.json")) as f:
+            checks = json.load(f)
+        assert [c.get("blinded_key") for c in checks] == ["result_01", "result_02", None]
         # generated task.py must at least be valid Python
         with open(os.path.join(env_dir, "task.py")) as f:
             compile(f.read(), "task.py", "exec")

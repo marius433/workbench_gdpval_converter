@@ -30,6 +30,9 @@ from .schema import CandidateEnv, CheckSpec
 # Shape requirements for a candidate to count as a real RL environment.
 MIN_CHECKS = 3
 MIN_DERIVED_CHECKS = 1
+# Checks that carry a verified decoy (the naive path computes to a value the
+# tolerance rejects). This is the distractor-first difficulty requirement.
+MIN_DECOY_CHECKS = 1
 
 _BIN_OPS: dict[type[ast.operator], Callable[[float, float], float]] = {
     ast.Add: operator.add,
@@ -77,6 +80,7 @@ class CheckValidation:
     reasons: list[str] = field(default_factory=list)
     facts: list[str] = field(default_factory=list)
     computed: float | None = None
+    decoy_computed: float | None = None
 
 
 def validate_check(check: CheckSpec, refdir: str) -> CheckValidation:
@@ -133,6 +137,34 @@ def validate_check(check: CheckSpec, refdir: str) -> CheckValidation:
         v.reasons.append(
             f"derivation computes {computed:.6g}, expected {check.expected} ± {check.tolerance}"
         )
+
+    # Decoy verification: the naive path must compute from the real files AND
+    # land outside the tolerance — otherwise the trap is not a trap.
+    if check.decoy is not None:
+        decoy_names: dict[str, float] = {}
+        for ref in check.decoy.refs:
+            r = resolve_fact(ref, refdir)
+            v.facts.append(f"decoy {ref.name}: {r.detail}")
+            if not r.ok:
+                v.ok = False
+                v.reasons.append(f"decoy fact {ref.name!r} failed: {r.detail}")
+            elif isinstance(r.value, int | float) and not isinstance(r.value, bool):
+                decoy_names[ref.name] = float(r.value)
+        if v.ok:
+            try:
+                decoy_value = safe_eval(check.decoy.derivation, decoy_names | numeric_names)
+            except (ValueError, ZeroDivisionError) as e:
+                v.ok = False
+                v.reasons.append(f"decoy derivation failed: {e}")
+                return v
+            v.decoy_computed = decoy_value
+            if abs(decoy_value - float(check.expected)) <= check.tolerance:
+                v.ok = False
+                v.reasons.append(
+                    f"decoy computes {decoy_value:.6g}, inside tolerance of expected "
+                    f"{check.expected} ± {check.tolerance} — the naive path would score; "
+                    "not a real trap"
+                )
     return v
 
 
@@ -149,6 +181,20 @@ def validate_candidate(candidate: CandidateEnv, refdir: str) -> dict[str, Any]:
             f"only {derived} derived check(s); minimum {MIN_DERIVED_CHECKS} — "
             "lookup-only rewards are too easy"
         )
+    decoys = sum(1 for c in candidate.checks if c.decoy is not None)
+    if decoys < MIN_DECOY_CHECKS:
+        reasons.append(
+            f"only {decoys} decoy-backed check(s); minimum {MIN_DECOY_CHECKS} — "
+            "a task with no verified trap does not punish the obvious path"
+        )
+    missing_ask = [
+        c.key for c in candidate.checks if c.check_type == "json_value" and not c.report_ask
+    ]
+    if missing_ask:
+        reasons.append(
+            "json_value check(s) without report_ask (agent-facing wording): "
+            + ", ".join(missing_ask[:5])
+        )
     if not candidate.deliverables:
         reasons.append("no deliverables named")
     failed = [r for r in check_results if not r.ok]
@@ -162,6 +208,7 @@ def validate_candidate(candidate: CandidateEnv, refdir: str) -> dict[str, Any]:
                 "key": r.key,
                 "ok": r.ok,
                 "computed": r.computed,
+                "decoy_computed": r.decoy_computed,
                 "reasons": r.reasons,
                 "facts": r.facts,
             }

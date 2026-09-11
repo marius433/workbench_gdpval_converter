@@ -134,6 +134,84 @@ def _cmd_rlgen_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def _llm_client(args: argparse.Namespace) -> object:
+    from .rlgen.llm import LLMClient, LLMConfig
+
+    config = LLMConfig()
+    if getattr(args, "model", None):
+        config.model = args.model
+    if getattr(args, "base_url", None):
+        config.base_url = args.base_url
+    return LLMClient(config)
+
+
+def _cmd_rlgen_harden(args: argparse.Namespace) -> int:
+    from .rlgen.harden import harden_all
+    from .rlgen.llm import LLMClient
+
+    client = _llm_client(args)
+    assert isinstance(client, LLMClient)
+    results = harden_all(
+        args.envs_root, args.rl_out, client=client, category_from=args.category_from
+    )
+    for r in results:
+        status = f"-> {r.exported_to}" if r.exported_to else f"REJECTED: {'; '.join(r.reasons)}"
+        print(f"  {r.env_id}: {status}")
+    hardened = sum(1 for r in results if r.exported_to)
+    print(f"{len(results)} solved env(s) processed; {hardened} hardened revision(s) exported")
+    print("next: wb2gdpval rlgen gate " + args.envs_root + " (re-gate the -hN revisions)")
+    return 0 if results else 1
+
+
+def _cmd_grade_run(args: argparse.Namespace) -> int:
+    from .grade.runner import run_workers
+
+    results = run_workers(
+        args.export_dir,
+        models=args.models.split(","),
+        task_ids=args.task or None,
+        max_messages=args.max_messages,
+    )
+    for r in results:
+        note = (
+            "skipped (already run)"
+            if r.skipped
+            else f"ERROR {r.error}"
+            if r.error
+            else f"produced {r.produced}" + (f" MISSING {r.missing}" if r.missing else "")
+        )
+        print(f"  {r.task_id} [{r.model}]: {note}")
+    failures = sum(1 for r in results if r.error)
+    print(f"{len(results)} run(s); {failures} error(s)")
+    return 0 if not failures else 1
+
+
+def _cmd_grade_judge(args: argparse.Namespace) -> int:
+    from .grade.judge import judge_export
+    from .rlgen.llm import LLMClient
+
+    client = _llm_client(args)
+    assert isinstance(client, LLMClient)
+    summary = judge_export(
+        args.export_dir,
+        client,
+        workers=args.workers.split(","),
+        task_ids=args.task or None,
+    )
+    print(json.dumps(summary, indent=1))
+    return 0 if not summary["errors"] else 1
+
+
+def _cmd_grade_elo(args: argparse.Namespace) -> int:
+    from .grade.elo import hardness_report
+
+    path = hardness_report(args.export_dir)
+    with open(path) as f:
+        print(f.read())
+    print(f"report: {path}")
+    return 0
+
+
 def _cmd_rlgen_gate(args: argparse.Namespace) -> int:
     from .rlgen.difficulty import gate_all
 
@@ -214,6 +292,40 @@ def build_parser() -> argparse.ArgumentParser:
     ga.add_argument("--threshold", type=float, default=0.8, help="solve threshold")
     ga.add_argument("--no-discard", action="store_true", help="report only, keep all")
     ga.set_defaults(func=_cmd_rlgen_gate)
+
+    h = rlsub.add_parser("harden", help="adversarially regenerate envs the gate marked solved")
+    h.add_argument("envs_root")
+    h.add_argument("--rl-out", default="./rl_out", help="generation output root (for meta)")
+    h.add_argument("--model", help="generator model id")
+    h.add_argument("--base-url", help="OpenAI-compatible endpoint")
+    h.add_argument("--category-from")
+    h.set_defaults(func=_cmd_rlgen_harden)
+
+    gr = sub.add_parser("grade", help="private Elo grading of an export (AA v2 methodology)")
+    grsub = gr.add_subparsers(dest="grade_command", required=True)
+
+    grun = grsub.add_parser("run", help="workers attempt tasks; deliverables collected")
+    grun.add_argument("export_dir")
+    grun.add_argument(
+        "--models", required=True, help="comma-separated inspect model ids (openrouter/...)"
+    )
+    grun.add_argument("--task", action="append", help="limit to task id (repeatable)")
+    grun.add_argument("--max-messages", type=int, default=120)
+    grun.set_defaults(func=_cmd_grade_run)
+
+    gj = grsub.add_parser("judge", help="pairwise judging of workers + gold, both orders")
+    gj.add_argument("export_dir")
+    gj.add_argument(
+        "--workers", required=True, help="comma-separated worker model ids (as passed to run)"
+    )
+    gj.add_argument("--model", help="judge model id (LLM client naming)")
+    gj.add_argument("--base-url", help="OpenAI-compatible endpoint")
+    gj.add_argument("--task", action="append", help="limit to task id (repeatable)")
+    gj.set_defaults(func=_cmd_grade_judge)
+
+    ge = grsub.add_parser("elo", help="Bradley-Terry fit + hardness report")
+    ge.add_argument("export_dir")
+    ge.set_defaults(func=_cmd_grade_elo)
 
     return p
 

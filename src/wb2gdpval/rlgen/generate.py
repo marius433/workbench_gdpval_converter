@@ -40,19 +40,34 @@ Hard requirements for every candidate:
 - The assignment must be answerable from the reference files alone, and must be
   DIFFERENT work from the source task (a different question, deliverable or analysis
   angle - not a paraphrase).
-- Maximise difficulty while staying fair: prefer quantities that require multi-step
-  derivations, joins across several files, unit/basis corrections, or resisting a
-  distractor the data room deliberately contains. A value that can be read off a
-  single cell is worthless as a reward.
+- BUILD EACH TASK AROUND A TRAP the data room genuinely contains: a published column
+  on the wrong basis, a headline figure the raw data contradicts, superseded numbers
+  a later document corrects, a definitional mismatch between files, mixed units. The
+  expected value of a check must be reachable ONLY by rejecting that obvious path.
+  A value that can be read off a single cell, or computed the first way anyone would
+  try, is worthless as a reward.
+- For at least TWO numeric checks per candidate, also supply a `decoy`: the
+  derivation the obvious-but-wrong path yields (with its own grounding refs). The
+  validator computes the decoy from the real files and requires it to land OUTSIDE
+  the check's tolerance — if the naive path scores, the candidate is rejected.
 - Every numeric check must include: a `derivation` (pure arithmetic over named refs
   and numeric literals) and `refs` grounding every input — spreadsheet values as
   {file, sheet, cell}, prose facts as {file, quote} with an EXACT substring from the
   file text you were shown. A validator will recompute every derivation against the
   real files and discard anything that does not verify, so never estimate and never
   invent cell addresses.
-- Ask the agent to write a `report.json` indexing its results with exactly your check
-  keys, alongside the deliverable file(s). Say so explicitly in the prompt.
-- 4 to 8 checks per candidate; include one file_exists check per deliverable.
+- SECRECY DISCIPLINE: the agent will see only the `prompt` and each check's
+  `report_ask` (under a blinded key like result_01) — never your `key`,
+  `description`, `derivation` or `decoy`. Therefore the prompt and every
+  report_ask must define WHAT to produce and report, in the words a client would
+  use, without naming the trap, the correct basis, the adjustment, or the files
+  that resolve it. If your report_ask gives away the method, the task is dead on
+  arrival. Set `unit` so the agent knows the unit without it leaking method.
+- Do NOT tell the agent to write report.json in your prompt — the harness appends
+  the report instructions itself. End the prompt at the professional assignment.
+- 5 to 8 checks per candidate; include one file_exists check per deliverable.
+- Tolerances: as tight as the arithmetic allows (rounding only), never wide enough
+  to admit the decoy value.
 
 Return ONLY a JSON object in this shape:
 """
