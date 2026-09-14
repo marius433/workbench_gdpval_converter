@@ -1,0 +1,202 @@
+{
+  "candidates": [
+    {
+      "env_id": "petropoin-redesign-package-cost-bridge",
+      "title": "PetroPoin redesign — costing Mei-Ling's earn-and-cashback package",
+      "prompt": "You are Citra Widyastuti, Analyst at Aurelian & Co., on the PetroNusa engagement (loyalty workstream). It is early August 2025. The PetroPoin current-state assessment was accepted at SteerCo 4 in June; that workstream's working summary and the manager's handoff note are in the project folder, alongside the client's own programme documentation and the competitor research and marketing packs.\n\nMarcus Whelan writes:\n\n---\nSubject: Loyalty redesign economics, for SteerCo 5\n\nCitra,\n\nMei-Ling's line at the steering group was, near enough: customers love points, so double the earn rate and layer in some cashback like KhatuFuel, and that closes the gap with ArthaFuel on headline offer. She has Bambang half-persuaded. Before SteerCo 5 on 21 August I need her steer tested as a costed package rather than as a slogan.\n\nBuild the package exactly as she has framed it:\n\n- Earn: double PetroPoin's current earn rate. Leave the redemption mechanics alone. Earn cost per point follows from the programme's redemption mechanics and its breakage assumption; both are in the folder.\n- Cashback: a single flat cashback rate on fuel spend, paid to every member. Her own design note rules out subscriptions, paid tiers and spend thresholds, so a competitor-matched rate has to be one that competitor delivers to its members on that same unconditional basis.\n\nWork the money case per litre against the fuel gross margin that litre earns, and at group level against the last reported full year. On the face of the model I want:\n\n(a) the per-litre cost of the cashback leg on a like-for-like match to KhatuFuel;\n(b) the same leg costed to match ArthaFuel instead, expressed against fuel gross margin per litre;\n(c) what the KhatuFuel-matched cashback leg would cost in a full year if it ran across PetroNusa's fuel sales, expressed against group EBITDA;\n(d) the whole package — doubled earn plus the KhatuFuel-matched cashback — as a share of fuel gross margin per litre, costed twice: once on the earn rule as the programme documentation states it, and once on the points-per-litre the FY2024 transaction records show, because the current-state work left that unresolved;\n(e) how often the members the CRM extract currently counts as active actually fill up.\n\nAssume the cashback applies to all fuel retail sales and that the pump price and margin structure carried in the folder hold. State the basis of every figure on the face of the workbook; where the folder carries more than one figure for the same thing, say which you used and why the others are not it. Show me the money case, not engagement metrics dressed up as one, and keep the deck sharp — Bambang does not sit through long decks.\n\nThe wallet sourcing call sits with Hendra's team on P40/P13 — stay in our lane.\n\nThanks, Marcus\n---\n\nWork in SRP unless a figure is more naturally stated otherwise, and make the arithmetic traceable cell by cell.\n\nDeliverables: a redesign economics model in Excel and a deck for Bambang. Save them as `petropoin_redesign_economics_model.xlsx` and `petropoin_loyalty_redesign_deck.pptx` in your output directory.",
+      "deliverables": [
+        "petropoin_redesign_economics_model.xlsx",
+        "petropoin_loyalty_redesign_deck.pptx"
+      ],
+      "difficulty_rationale": "Five live traps, none of them the ones the previous attempt cleared. (1) Both competitor cashback headlines are gated: ArthaFuel's 4.2% is the ArthaElite tier (base rate for standard members 2.1%) and KhatuFuel's 3.8% is KhatuPlus-subscriber only (free tier 1.5%) — stated only in the notes of the PR/marketing pack, while the research workbook publishes the headline-derived per-litre costs (567 and 513 SRP/litre) as ready-made lift-and-drop cells. The brief's design constraint (flat, unconditional, no subscription or tier) makes the standard-tier rates the only like-for-like basis. (2) Cashback runs on fuel spend, so the group-level cost is a share of fuel retail revenue (USD 4,089M), not group revenue (USD 4,217M), against reported group EBITDA of USD 261M. (3) The earn leg has to be costed on both readings the handoff note leaves open: documented 1 point/litre versus the 10 points/litre the FY2024 transaction records actually carry — a 10x swing that the documentation alone hides. (4) Reward cost per point requires the redemption rule (500 points = 5 litres, i.e. 135 SRP face) net of the approved 38.2% actuarial breakage, not the superseded ~45% still printed in the client-facing Programme Overview, and not face value. (5) The activity metric must be member-weighted across the nine CRM segments carrying the 30-day flag (421,900 members); a simple average across segments, or the Programme Overview's published 10–11 transactions per year, lands well outside tolerance.",
+      "checks": [
+        {
+          "key": "khatu_matched_cashback_cost_per_litre_srp",
+          "description": "Cashback cost per litre of matching KhatuFuel's cashback on an unconditional, all-member basis: the rate available without a KhatuPlus subscription is 1.5%, applied to the indicative pump price of SRP 13,500 = 202.5 SRP/litre.",
+          "report_ask": "Report the cashback cost per litre of the KhatuFuel-matched cashback leg, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 202.5,
+          "tolerance": 0.1,
+          "weight": 1.0,
+          "derivation": "khatu_std_rate / 100 * pump_price",
+          "refs": [
+            {"name": "pump_price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "khatu_std_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "Free-tier cashback is 1.5%."}
+          ],
+          "decoy": {
+            "description": "Lifting the published KhatuFuel cashback cost per litre from the research workbook, which is derived from the 3.8% subscriber headline rate.",
+            "derivation": "pub_khatu_per_litre",
+            "refs": [
+              {"name": "pub_khatu_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B6"}
+            ]
+          }
+        },
+        {
+          "key": "artha_matched_cashback_share_of_fuel_margin_pct",
+          "description": "Cost of matching ArthaFuel's cashback on the same unconditional basis (standard-member base rate 2.1% of pump price = 283.5 SRP/litre) as a percentage of fuel gross margin per litre (513 SRP/litre) = 55.2632%.",
+          "report_ask": "Report the ArthaFuel-matched cashback cost per litre as a percentage of fuel gross margin per litre.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 55.2632,
+          "tolerance": 0.03,
+          "weight": 1.0,
+          "derivation": "artha_std_rate / 100 * pump_price / fuel_margin_per_litre * 100",
+          "refs": [
+            {"name": "pump_price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "fuel_margin_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"},
+            {"name": "artha_std_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "base rate for standard members is 2.1%"}
+          ],
+          "decoy": {
+            "description": "Using the published ArthaFuel cashback cost per litre (derived from the 4.2% ArthaElite headline) over fuel gross margin per litre.",
+            "derivation": "pub_artha_per_litre / fuel_margin_per_litre2 * 100",
+            "refs": [
+              {"name": "pub_artha_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B5"},
+              {"name": "fuel_margin_per_litre2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"}
+            ]
+          }
+        },
+        {
+          "key": "cashback_leg_fullyear_cost_vs_group_ebitda_pct",
+          "description": "Full-year cost of the KhatuFuel-matched cashback leg across all fuel retail sales = 1.5% of fuel retail revenue (USD 4,089M) = USD 61.335M, expressed against group EBITDA of USD 261M = 23.4962%. FX cancels if computed in SRP.",
+          "report_ask": "Report the full-year cost of the KhatuFuel-matched cashback leg as a percentage of group EBITDA.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 23.4962,
+          "tolerance": 0.03,
+          "weight": 1.0,
+          "derivation": "khatu_std_rate / 100 * fuel_retail_revenue / group_ebitda * 100",
+          "refs": [
+            {"name": "khatu_std_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "Free-tier cashback is 1.5%."},
+            {"name": "fuel_retail_revenue", "file": "04_reference/PetroNusa_Company_Profile.docx", "quote": "Fuel retail revenue"},
+            {"name": "group_ebitda", "file": "04_reference/PetroNusa_Company_Profile.docx", "quote": "Group EBITDA"}
+          ],
+          "decoy": {
+            "description": "Applying the published 3.8% headline cashback rate to group revenue rather than the standard-tier rate to fuel retail revenue.",
+            "derivation": "headline_khatu / 100 * group_revenue / group_ebitda2 * 100",
+            "refs": [
+              {"name": "headline_khatu", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "headline_rates", "cell": "E3"},
+              {"name": "group_revenue", "file": "04_reference/PetroNusa_Company_Profile.docx", "quote": "Group revenue"},
+              {"name": "group_ebitda2", "file": "04_reference/PetroNusa_Company_Profile.docx", "quote": "Group EBITDA"}
+            ]
+          }
+        },
+        {
+          "key": "package_cost_share_of_fuel_margin_documented_earn_pct",
+          "description": "Package cost per litre on the documented earn rule: doubled earn = 2 points/litre; reward cost per point = (5 litres x 13,500) / 500 = 135 SRP face x (1 - 0.382 approved breakage) = 83.43 SRP; earn leg 166.86 SRP/litre plus KhatuFuel-matched cashback 202.5 SRP/litre = 369.36 SRP/litre, against 513 SRP/litre fuel gross margin = 72.0000%.",
+          "report_ask": "Report the total per-litre cost of the doubled-earn plus matched-cashback package as a percentage of fuel gross margin per litre, on the programme's documented earn rule.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 72.0,
+          "tolerance": 0.06,
+          "weight": 1.0,
+          "derivation": "(2 * (5 * pump_price / 500) * (1 - breakage) + khatu_std_rate / 100 * pump_price) / fuel_margin_per_litre * 100",
+          "refs": [
+            {"name": "pump_price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "fuel_margin_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Points_Economics_Inputs", "cell": "B22"},
+            {"name": "redemption_rule", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"},
+            {"name": "documented_earn", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "1 PetroPoin point for every litre of fuel purchased"},
+            {"name": "khatu_std_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "Free-tier cashback is 1.5%."}
+          ],
+          "decoy": {
+            "description": "Costing the doubled earn at face redemption value (no breakage) and taking the published headline-derived cashback cost per litre.",
+            "derivation": "(2 * (5 * pump_price2 / 500) + pub_khatu_per_litre) / fuel_margin_per_litre2 * 100",
+            "refs": [
+              {"name": "pump_price2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+              {"name": "pub_khatu_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B6"},
+              {"name": "fuel_margin_per_litre2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"}
+            ]
+          }
+        },
+        {
+          "key": "package_cost_share_of_fuel_margin_recorded_earn_pct",
+          "description": "Package cost per litre on the earn rate the FY2024 transaction records carry (points column is exactly ten times the litres column, i.e. 10 points/litre): doubled = 20 points/litre x 83.43 SRP expected cost per point = 1,668.6 SRP/litre, plus KhatuFuel-matched cashback 202.5 = 1,871.1 SRP/litre, against 513 SRP/litre fuel gross margin = 364.7368%.",
+          "report_ask": "Report the same package cost as a percentage of fuel gross margin per litre, on the earn rate the FY2024 transaction records show.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 364.7368,
+          "tolerance": 0.2,
+          "weight": 1.0,
+          "derivation": "(20 * (5 * pump_price / 500) * (1 - breakage) + khatu_std_rate / 100 * pump_price) / fuel_margin_per_litre * 100",
+          "refs": [
+            {"name": "pump_price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "fuel_margin_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Points_Economics_Inputs", "cell": "B22"},
+            {"name": "recorded_earn", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "the points column is exactly ten times the litres column"},
+            {"name": "redemption_rule", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"},
+            {"name": "khatu_std_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "Free-tier cashback is 1.5%."}
+          ],
+          "decoy": {
+            "description": "Recorded earn rate doubled but costed at face redemption value with the published headline-derived cashback cost per litre.",
+            "derivation": "(20 * (5 * pump_price2 / 500) + pub_khatu_per_litre) / fuel_margin_per_litre2 * 100",
+            "refs": [
+              {"name": "pump_price2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+              {"name": "pub_khatu_per_litre", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B6"},
+              {"name": "fuel_margin_per_litre2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"}
+            ]
+          }
+        },
+        {
+          "key": "active30_cohort_fills_per_month",
+          "description": "Member-weighted average monthly fuel fills of the nine CRM segments carrying Last_Txn_Flag_30d = 1 (421,900 members): sum(members x avg fills pm) = 2,538,542 / 421,900 = 6.0169 fills per month.",
+          "report_ask": "Report the average number of fuel fills per month for the member cohort the CRM extract flags as active on the 30-day window.",
+          "unit": "fills per month",
+          "check_type": "json_value",
+          "expected": 6.0169,
+          "tolerance": 0.01,
+          "weight": 1.0,
+          "derivation": "(c1*f1 + c2*f2 + c3*f3 + c4*f4 + c5*f5 + c6*f6 + c7*f7 + c8*f8 + c9*f9) / act30",
+          "refs": [
+            {"name": "c1", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C11"},
+            {"name": "f1", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F11"},
+            {"name": "c2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C17"},
+            {"name": "f2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F17"},
+            {"name": "c3", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C18"},
+            {"name": "f3", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F18"},
+            {"name": "c4", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C23"},
+            {"name": "f4", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F23"},
+            {"name": "c5", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C24"},
+            {"name": "f5", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F24"},
+            {"name": "c6", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C25"},
+            {"name": "f6", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F25"},
+            {"name": "c7", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C30"},
+            {"name": "f7", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F30"},
+            {"name": "c8", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C31"},
+            {"name": "f8", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F31"},
+            {"name": "c9", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C32"},
+            {"name": "f9", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F32"},
+            {"name": "act30", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C34"}
+          ],
+          "decoy": {
+            "description": "Averaging the nine segment-level fills-per-month figures without weighting by member count.",
+            "derivation": "(f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8 + f9) / 9",
+            "refs": [
+              {"name": "f1", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F11"},
+              {"name": "f2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F17"},
+              {"name": "f3", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F18"},
+              {"name": "f4", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F23"},
+              {"name": "f5", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F24"},
+              {"name": "f6", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F25"},
+              {"name": "f7", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F30"},
+              {"name": "f8", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F31"},
+              {"name": "f9", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F32"}
+            ]
+          }
+        },
+        {
+          "key": "petropoin_redesign_economics_model.xlsx",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        },
+        {
+          "key": "petropoin_loyalty_redesign_deck.pptx",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        }
+      ]
+    }
+  ]
+}

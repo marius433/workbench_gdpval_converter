@@ -1,0 +1,322 @@
+{
+  "candidates": [
+    {
+      "env_id": "petronusa-premium-netback-bridge",
+      "title": "PetroNusa RON 95 quarter-on-quarter price bridge on the benchmarking basis",
+      "prompt": "You are a consultant at Aurelian & Co. on the PetroNusa engagement (downstream fuel retail, Republic of Sariwon).\n\nThe pricing workstream is preparing the premium-fuel section of the diagnostic and the Commercial Finance team has asked for a clean quarter-on-quarter read on RON 95 premium gasoline pricing. Headline pump values circulating internally are not comparable across periods, so every figure you produce must be stated on the basis that Commercial Finance uses when it benchmarks premium performance across quarters and against ArthaFuel and KhatuFuel — check the folder for their standing guidance and state clearly which basis each figure is on.\n\nWork from the files in the folder. Specifically:\n\n1. Restate the RON 95 posted pump price for Q1 2026 and for Q4 2025 onto the Commercial Finance benchmarking basis, per litre.\n2. Quantify the movement between the two quarters, both in SRP per litre and in percentage terms, on that basis.\n3. Quantify how much of the Q1 2026 RON 95 posted pump price is consumption tax and duty rather than commercial value: give the VAT contained in the posted price per litre, and give VAT plus excise duty combined as a percentage of the posted price.\n4. Flag any figure or claim in the folder that your numbers contradict, and say which source you relied on where sources disagree.\n\nSave your deliverable as `premium_netback_bridge.md` — a short memo giving the figures, the derivation of each, the basis they are stated on, and the data issues you found.",
+      "deliverables": ["premium_netback_bridge.md"],
+      "difficulty_rationale": "The obvious path is to read posted pump prices (SRP 15,600 for Q1-2026, SRP 14,900 for Q4-2025) straight off the station extract and compute a 4.70% quarter-on-quarter rise. The Commercial Finance note defines the house benchmarking basis as pump value less VAT less excise, and the tax schedule states pump prices are VAT-INCLUSIVE (divide by 1.11, not multiply by 0.11) with RON 95 excise at SRP 1,250/litre. Restating both quarters changes the level by ~2,800 SRP/l and inflates the QoQ move to 5.18%, and the VAT-per-litre figure is 1,545.95 not 1,716. A further red herring: the netback note calls RON 95 excise 'roughly a tenth of the pump price' when it is 8.0%, and the expert call offers an unusable SRP 210bn revenue recollection.",
+      "checks": [
+        {
+          "key": "netback_ron95_q1_2026",
+          "description": "Q1-2026 RON 95 posted price restated to Commercial Finance netback basis: pump 15,600 / 1.11 (VAT-inclusive) less RON 95 excise 1,250 = 12,804.05 SRP/l.",
+          "report_ask": "Report the Q1 2026 RON 95 posted price restated onto the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 12804.05,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "pump_q1 / 1.11 - 1250",
+          "refs": [
+            {"name": "pump_q1", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Commercial Finance note - premium netback basis.docx", "quote": "at SRP 1,250 per litre on RON 95"},
+            {"name": "basis", "file": "Commercial Finance note - premium netback basis.docx", "quote": "pump value less VAT, less excise duty"}
+          ],
+          "decoy": {
+            "description": "Naive path: subtract excise from the posted pump price without removing the embedded VAT.",
+            "derivation": "pump_q1_d - 1250",
+            "refs": [
+              {"name": "pump_q1_d", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "netback_ron95_q4_2025",
+          "description": "Q4-2025 RON 95 posted price on netback basis: 14,900 / 1.11 - 1,250 = 12,173.42 SRP/l.",
+          "report_ask": "Report the Q4 2025 RON 95 posted price restated onto the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 12173.42,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "pump_q4 / 1.11 - 1250",
+          "refs": [
+            {"name": "pump_q4", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: posted pump price less excise only, VAT left in.",
+            "derivation": "pump_q4_d - 1250",
+            "refs": [
+              {"name": "pump_q4_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "qoq_move_srp_per_litre",
+          "description": "Quarter-on-quarter movement on netback basis: (15,600 - 14,900) / 1.11 = 630.63 SRP/l.",
+          "report_ask": "Report the quarter-on-quarter movement in the RON 95 price on the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 630.63,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "(pump_q1 / 1.11 - 1250) - (pump_q4 / 1.11 - 1250)",
+          "refs": [
+            {"name": "pump_q1", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "pump_q4", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: raw pump-price difference, 15,600 - 14,900.",
+            "derivation": "pump_q1_d - pump_q4_d",
+            "refs": [
+              {"name": "pump_q1_d", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+              {"name": "pump_q4_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "qoq_move_pct",
+          "description": "Percentage movement on netback basis: 700 / 13,512.5 = 5.1796%, i.e. larger than the 4.70% pump-basis move.",
+          "report_ask": "Report the quarter-on-quarter movement in the RON 95 price on the Commercial Finance benchmarking basis, in percent.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 5.18,
+          "tolerance": 0.02,
+          "weight": 1.0,
+          "derivation": "((pump_q1 / 1.11 - 1250) / (pump_q4 / 1.11 - 1250) - 1) * 100",
+          "refs": [
+            {"name": "pump_q1", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "pump_q4", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT is levied at 11% on retail sales of motor fuels."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: percentage change in the posted pump prices themselves.",
+            "derivation": "(pump_q1_d / pump_q4_d - 1) * 100",
+            "refs": [
+              {"name": "pump_q1_d", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+              {"name": "pump_q4_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "vat_per_litre_q1",
+          "description": "VAT contained in the Q1-2026 RON 95 posted pump price: 15,600 - 15,600/1.11 = 1,545.95 SRP/l.",
+          "report_ask": "Report the VAT contained in the Q1 2026 RON 95 posted pump price, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 1545.95,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "pump_q1 - pump_q1 / 1.11",
+          "refs": [
+            {"name": "pump_q1", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."}
+          ],
+          "decoy": {
+            "description": "Naive path: 11% applied to the VAT-inclusive pump price.",
+            "derivation": "pump_q1_d * 0.11",
+            "refs": [
+              {"name": "pump_q1_d", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "tax_wedge_pct_q1",
+          "description": "VAT plus RON 95 excise as a share of the Q1-2026 posted pump price: (1,545.95 + 1,250) / 15,600 = 17.92%.",
+          "report_ask": "Report VAT plus excise duty combined as a percentage of the Q1 2026 RON 95 posted pump price.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 17.92,
+          "tolerance": 0.03,
+          "weight": 1.0,
+          "derivation": "((pump_q1 - pump_q1 / 1.11) + 1250) / pump_q1 * 100",
+          "refs": [
+            {"name": "pump_q1", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: 11% of the pump price plus excise, over pump price.",
+            "derivation": "(pump_q1_d * 0.11 + 1250) / pump_q1_d * 100",
+            "refs": [
+              {"name": "pump_q1_d", "file": "PetroNusa_premium_station_sales_v2.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "premium_netback_bridge.md",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        }
+      ]
+    },
+    {
+      "env_id": "petronusa-grade-ladder-state-take",
+      "title": "PetroNusa Q4 2025 gasoline grade ladder: state take vs commercial value",
+      "prompt": "You are a consultant at Aurelian & Co. on the PetroNusa engagement (downstream fuel retail, Republic of Sariwon).\n\nThe CFO's pricing review has asked a simple question that nobody in the client team can answer consistently: on the Q4 2025 posted pump prices, how much of each gasoline grade's price is taken by the state, and how much of the headline price ladder between grades is real commercial value? Management keeps quoting the SRP 2,600 per litre gap between RON 95 and RON 90 as the premium the network earns for upgrading a customer, and Commercial Finance disputes it.\n\nUsing the files in the folder, and stating every figure on the basis Commercial Finance uses for competitive and cross-grade benchmarking (their standing guidance is in the folder — say clearly which basis each figure is on), produce for Q4 2025:\n\n1. For RON 90, RON 92 and RON 95: the total per-litre amount taken by the state on each grade (all taxes, duties and levies that apply to that grade), and the per-litre value remaining to the business on the Commercial Finance basis.\n2. The state take on RON 95 expressed as a percentage of its posted pump price.\n3. The RON 95-over-RON 90 price ladder: the gap on the Commercial Finance basis, in SRP per litre, and that gap expressed as a percentage of the headline posted-price gap — i.e. how much of management's quoted premium actually survives.\n4. A short note on where the folder's own commentary about these taxes is imprecise or misleading.\n\nSave your deliverable as `grade_ladder_state_take.md` — a short memo with the per-grade table, the derivation of each figure, the basis used, and your caveats.",
+      "deliverables": ["grade_ladder_state_take.md"],
+      "difficulty_rationale": "Three traps stack. (a) Pump prices are VAT-INCLUSIVE, so VAT per litre is price x 0.11/1.11, not price x 0.11. (b) Excise is grade-specific (RON 90: 340, RON 92: 900, RON 95: 1,250) and the SRP 25/l Energy Price Stabilisation Fund contribution applies ONLY to subsidised grades, i.e. to RON 90 and not to RON 92/95 — most analysts either apply the premium excise across grades or drop the levy entirely. (c) Because excise rises steeply up the ladder, management's SRP 2,600 pump gap between RON 95 and RON 90 collapses to SRP 1,432 on the Commercial Finance basis, i.e. only ~55% survives; the naive VAT-only restatement gives ~90%.",
+      "checks": [
+        {
+          "key": "state_take_ron90",
+          "description": "Total per-litre state take on RON 90 at the Q4-2025 posted price of 12,300: VAT 12,300 - 12,300/1.11 = 1,218.92, plus excise 340, plus Energy Price Stabilisation Fund 25 (subsidised grades only) = 1,583.92 SRP/l.",
+          "report_ask": "Report the total per-litre amount taken by the state on RON 90 at its Q4 2025 posted pump price, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 1583.92,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "(pump90 - pump90 / 1.11) + 340 + 25",
+          "refs": [
+            {"name": "pump90", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise90", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 340 per litre"},
+            {"name": "espf", "file": "Sariwon fuel taxes and duties.docx", "quote": "An Energy Price Stabilisation Fund contribution of SRP 25 per litre applies to subsidised grades only"}
+          ],
+          "decoy": {
+            "description": "Naive path: VAT (correctly de-grossed) plus excise only, omitting the stabilisation-fund contribution that applies to subsidised grades.",
+            "derivation": "(pump90_d - pump90_d / 1.11) + 340",
+            "refs": [
+              {"name": "pump90_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"}
+            ]
+          }
+        },
+        {
+          "key": "commercial_value_ron92",
+          "description": "RON 92 value on the Commercial Finance basis: 13,600 / 1.11 - 900 = 11,352.25 SRP/l.",
+          "report_ask": "Report the per-litre value remaining to the business on RON 92 at its Q4 2025 posted pump price, on the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 11352.25,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "pump92 / 1.11 - 900",
+          "refs": [
+            {"name": "pump92", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F5"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise92", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 900 per litre"},
+            {"name": "basis", "file": "Commercial Finance note - premium netback basis.docx", "quote": "pump value less VAT, less excise duty"}
+          ],
+          "decoy": {
+            "description": "Naive path: applying the premium (RON 95) excise rate of 1,250 to RON 92 as well.",
+            "derivation": "pump92_d / 1.11 - 1250",
+            "refs": [
+              {"name": "pump92_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F5"}
+            ]
+          }
+        },
+        {
+          "key": "commercial_value_ron95",
+          "description": "RON 95 value on the Commercial Finance basis at Q4-2025 posted price: 14,900 / 1.11 - 1,250 = 12,173.42 SRP/l.",
+          "report_ask": "Report the per-litre value remaining to the business on RON 95 at its Q4 2025 posted pump price, on the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 12173.42,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "pump95 / 1.11 - 1250",
+          "refs": [
+            {"name": "pump95", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: pump price less excise, leaving embedded VAT in the figure.",
+            "derivation": "pump95_d - 1250",
+            "refs": [
+              {"name": "pump95_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "state_take_pct_ron95",
+          "description": "State take on RON 95 as a share of its Q4-2025 posted price: (14,900 - 14,900/1.11 + 1,250) / 14,900 = 18.30%.",
+          "report_ask": "Report the total state take on RON 95 as a percentage of its Q4 2025 posted pump price.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 18.3,
+          "tolerance": 0.03,
+          "weight": 1.0,
+          "derivation": "((pump95 - pump95 / 1.11) + 1250) / pump95 * 100",
+          "refs": [
+            {"name": "pump95", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: 11% of the VAT-inclusive pump price plus excise, over pump price.",
+            "derivation": "(pump95_d * 0.11 + 1250) / pump95_d * 100",
+            "refs": [
+              {"name": "pump95_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"}
+            ]
+          }
+        },
+        {
+          "key": "ladder_gap_95_over_90",
+          "description": "RON 95 over RON 90 gap on the Commercial Finance basis: (14,900/1.11 - 1,250) - (12,300/1.11 - 340) = 12,173.42 - 10,741.08 = 1,432.34 SRP/l.",
+          "report_ask": "Report the RON 95 over RON 90 price gap for Q4 2025 on the Commercial Finance benchmarking basis, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 1432.34,
+          "tolerance": 0.6,
+          "weight": 1.0,
+          "derivation": "(pump95 / 1.11 - 1250) - (pump90 / 1.11 - 340)",
+          "refs": [
+            {"name": "pump95", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "pump90", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"},
+            {"name": "excise90", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 340 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: management's headline posted-price gap, 14,900 - 12,300.",
+            "derivation": "pump95_d - pump90_d",
+            "refs": [
+              {"name": "pump95_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+              {"name": "pump90_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"}
+            ]
+          }
+        },
+        {
+          "key": "ladder_gap_survival_pct",
+          "description": "Share of the headline RON 95 over RON 90 posted-price gap surviving on the Commercial Finance basis: 1,432.34 / 2,600 = 55.09%.",
+          "report_ask": "Report the Q4 2025 RON 95 over RON 90 gap on the Commercial Finance benchmarking basis as a percentage of the headline posted-price gap between the two grades.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 55.09,
+          "tolerance": 0.05,
+          "weight": 1.0,
+          "derivation": "((pump95 / 1.11 - 1250) - (pump90 / 1.11 - 340)) / (pump95 - pump90) * 100",
+          "refs": [
+            {"name": "pump95", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+            {"name": "pump90", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"},
+            {"name": "vat_rule", "file": "Sariwon fuel taxes and duties.docx", "quote": "VAT-inclusive price \u00f7 1.11 = price excluding VAT."},
+            {"name": "excise95", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 1,250 per litre"},
+            {"name": "excise90", "file": "Sariwon fuel taxes and duties.docx", "quote": "SRP 340 per litre"}
+          ],
+          "decoy": {
+            "description": "Naive path: restating the gap for VAT only and ignoring that excise differs sharply by grade, giving 1/1.11 = 90.09%.",
+            "derivation": "((pump95_d - pump90_d) / 1.11) / (pump95_d - pump90_d) * 100",
+            "refs": [
+              {"name": "pump95_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F2"},
+              {"name": "pump90_d", "file": "PetroNusa_premium_station_sales_final.xlsx", "sheet": "sales", "cell": "F4"}
+            ]
+          }
+        },
+        {
+          "key": "grade_ladder_state_take.md",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        }
+      ]
+    }
+  ]
+}

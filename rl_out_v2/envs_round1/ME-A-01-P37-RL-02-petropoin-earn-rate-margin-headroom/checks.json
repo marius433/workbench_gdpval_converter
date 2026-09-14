@@ -1,0 +1,368 @@
+[
+ {
+  "key": "points_issued_per_litre_recorded",
+  "description": "Points per litre evidenced in the FY2024 transaction extract: 122 points on 12.2 litres = 10 points per litre, consistent across all fuel rows carrying points.",
+  "check_type": "json_value",
+  "expected": 10.0,
+  "tolerance": 0.05,
+  "weight": 1.0,
+  "derivation": "pts / litres",
+  "refs": [
+   {
+    "name": "litres",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "E7",
+    "quote": null
+   },
+   {
+    "name": "pts",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "H7",
+    "quote": null
+   },
+   {
+    "name": "ratio_note",
+    "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "the points column is exactly ten times the litres column"
+   }
+  ],
+  "report_ask": "Report the number of points the programme is currently issuing per litre of fuel.",
+  "unit": "points per litre",
+  "decoy": {
+   "description": "Taking the earn rate as documented in the client-facing programme overview.",
+   "derivation": "1",
+   "refs": [
+    {
+     "name": "documented_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+    }
+   ]
+  },
+  "blinded_key": "result_01"
+ },
+ {
+  "key": "expected_reward_cost_per_litre_srp",
+  "description": "Expected reward cost per earning litre = 10 points x (5 x 13,500 / 500) x (1 - 0.382) = 834.3 SRP per litre.",
+  "check_type": "json_value",
+  "expected": 834.3,
+  "tolerance": 1.5,
+  "weight": 1.0,
+  "derivation": "(pts / litres) * (5 * price / 500) * (1 - 0.382)",
+  "refs": [
+   {
+    "name": "litres",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "E7",
+    "quote": null
+   },
+   {
+    "name": "pts",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "H7",
+    "quote": null
+   },
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "redemption_rule",
+    "file": "03_data/PetroPoin_Programme_Overview.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"
+   },
+   {
+    "name": "breakage_note",
+    "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "estimate of 38.2% of gross outstanding"
+   }
+  ],
+  "report_ask": "Report the reward cost PetroNusa expects to bear per litre of fuel earned on, in SRP per litre.",
+  "unit": "SRP per litre",
+  "decoy": {
+   "description": "Costing the documented one-point-per-litre rule instead of the rate the records show.",
+   "derivation": "1 * (5 * price2 / 500) * (1 - 0.382)",
+   "refs": [
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "documented_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+    }
+   ]
+  },
+  "blinded_key": "result_02"
+ },
+ {
+  "key": "reward_cost_pct_of_fuel_gross_margin",
+  "description": "Expected reward cost per earning litre (834.3 SRP) as a percentage of fuel gross margin per litre (513 SRP) = 162.63%.",
+  "check_type": "json_value",
+  "expected": 162.632,
+  "tolerance": 0.6,
+  "weight": 1.0,
+  "derivation": "((pts / litres) * (5 * price / 500) * (1 - 0.382)) / margin * 100",
+  "refs": [
+   {
+    "name": "litres",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "E7",
+    "quote": null
+   },
+   {
+    "name": "pts",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "H7",
+    "quote": null
+   },
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "margin",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B2",
+    "quote": null
+   },
+   {
+    "name": "breakage_note",
+    "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "estimate of 38.2% of gross outstanding"
+   }
+  ],
+  "report_ask": "Report the reward cost per earning litre as a percentage of the fuel gross margin on that same litre.",
+  "unit": "pct",
+  "decoy": {
+   "description": "Costing points at full face redemption value with no breakage allowance.",
+   "derivation": "((pts2 / litres2) * (5 * price2 / 500)) / margin2 * 100",
+   "refs": [
+    {
+     "name": "litres2",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "E7",
+     "quote": null
+    },
+    {
+     "name": "pts2",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "H7",
+     "quote": null
+    },
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "margin2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B2",
+     "quote": null
+    }
+   ]
+  },
+  "blinded_key": "result_03"
+ },
+ {
+  "key": "residual_margin_per_litre_at_doubled_earn",
+  "description": "Fuel gross margin per litre left after reward cost if the earn rate is doubled = 513 - 2 x 834.3 = -1,155.6 SRP per litre.",
+  "check_type": "json_value",
+  "expected": -1155.6,
+  "tolerance": 3.0,
+  "weight": 1.0,
+  "derivation": "margin - 2 * ((pts / litres) * (5 * price / 500) * (1 - 0.382))",
+  "refs": [
+   {
+    "name": "litres",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "E7",
+    "quote": null
+   },
+   {
+    "name": "pts",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "H7",
+    "quote": null
+   },
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "margin",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B2",
+    "quote": null
+   },
+   {
+    "name": "breakage_note",
+    "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "estimate of 38.2% of gross outstanding"
+   }
+  ],
+  "report_ask": "Report the fuel gross margin remaining per litre after reward cost if the earn rate is doubled as proposed, in SRP per litre.",
+  "unit": "SRP per litre",
+  "decoy": {
+   "description": "Doubling the documented one-point-per-litre rule rather than the earn the records show.",
+   "derivation": "margin2 - 2 * (1 * (5 * price2 / 500) * (1 - 0.382))",
+   "refs": [
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "margin2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B2",
+     "quote": null
+    },
+    {
+     "name": "documented_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+    }
+   ]
+  },
+  "blinded_key": "result_04"
+ },
+ {
+  "key": "max_points_per_litre_under_margin_cap",
+  "description": "Maximum points per litre within a cap of one fifth of fuel gross margin = 0.2 x 513 / (135 x 0.618) = 1.2298 points per litre.",
+  "check_type": "json_value",
+  "expected": 1.2298,
+  "tolerance": 0.02,
+  "weight": 1.0,
+  "derivation": "0.2 * margin / ((5 * price / 500) * (1 - 0.382))",
+  "refs": [
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "margin",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B2",
+    "quote": null
+   },
+   {
+    "name": "redemption_rule",
+    "file": "03_data/PetroPoin_Programme_Overview.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"
+   },
+   {
+    "name": "breakage_note",
+    "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "estimate of 38.2% of gross outstanding"
+   }
+  ],
+  "report_ask": "Report the maximum number of points per litre the programme can issue while respecting the margin constraint set out in the brief.",
+  "unit": "points per litre",
+  "decoy": {
+   "description": "Sizing the cap on full face redemption value with no breakage allowance.",
+   "derivation": "0.2 * margin2 / (5 * price2 / 500)",
+   "refs": [
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "margin2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B2",
+     "quote": null
+    }
+   ]
+  },
+  "blinded_key": "result_05"
+ },
+ {
+  "key": "petropoin_earn_rate_headroom_model.xlsx",
+  "description": "deliverable exists",
+  "check_type": "file_exists",
+  "expected": null,
+  "tolerance": 0.0,
+  "weight": 0.5,
+  "derivation": null,
+  "refs": [],
+  "report_ask": "",
+  "unit": "",
+  "decoy": null,
+  "blinded_key": null
+ },
+ {
+  "key": "petropoin_earn_rate_headroom_memo.docx",
+  "description": "deliverable exists",
+  "check_type": "file_exists",
+  "expected": null,
+  "tolerance": 0.0,
+  "weight": 0.5,
+  "derivation": null,
+  "refs": [],
+  "report_ask": "",
+  "unit": "",
+  "decoy": null,
+  "blinded_key": null
+ }
+]

@@ -1,0 +1,27 @@
+[
+ {
+  "env_id": "ME-A-01-P37-RL-01-petropoin-points-liability-restatement",
+  "revised_env_id": "ME-A-01-P37-RL-01-petropoin-points-liability-restatement-h1",
+  "exported_to": null,
+  "valid": false,
+  "reasons": [
+   "5/8 checks failed verification"
+  ]
+ },
+ {
+  "env_id": "ME-A-01-P37-RL-02-petropoin-earn-rate-margin-headroom",
+  "revised_env_id": "ME-A-01-P37-RL-02-petropoin-earn-rate-margin-headroom-h1",
+  "exported_to": null,
+  "valid": false,
+  "reasons": [
+   "1/7 checks failed verification"
+  ]
+ },
+ {
+  "env_id": "ME-A-01-P37-RL-03-petronusa-offer-comparability-benchmark",
+  "revised_env_id": "ME-A-01-P37-RL-03-petronusa-offer-comparability-benchmark-h1",
+  "exported_to": "rl_out_v2/envs/ME-A-01-P37-RL-03-petronusa-offer-comparability-benchmark-h1",
+  "valid": true,
+  "reasons": []
+ }
+]

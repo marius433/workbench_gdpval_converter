@@ -1,0 +1,180 @@
+{
+  "candidates": [
+    {
+      "env_id": "ME-A-01-P37-RL-04-petropoin-earn-economics-headroom",
+      "title": "PetroPoin redesign economics: costing the double-the-earn steer",
+      "prompt": "You are Citra Widyastuti, Analyst at Aurelian & Co., PetroNusa engagement (loyalty workstream). It is early August 2025; SteerCo 5 is on 21 August. The loyalty current-state material (working summary, handoff note), the client's programme documentation, the CRM and transaction extracts, and the competitor research and PR packs are all in the project folder.\n\nMarcus Whelan writes:\n\n---\nSubject: Loyalty redesign economics — SteerCo 5\n\nCitra,\n\nMei-Ling's steer to the steering group was, near enough: customers love the points, so double the earn rate and bolt on cashback like KhatuFuel. Before we design anything I need the money case on the current mechanic and on her steer, built off what the programme actually runs and actually costs — not off the client-facing programme leaflet and not off competitor press releases.\n\nWhat I need reported out of the model:\n\n- what a litre of fuel that earns points costs us in reward, in SRP per litre, as the programme currently operates;\n- the same figure under Mei-Ling's doubled earn rate, expressed against our fuel gross margin on that litre;\n- how much fuel our genuinely engaged members actually buy — fills per year for the cohort the current extract records as having transacted inside a 90-day window;\n- the points overhang we are carrying per one of those engaged members, in SRP;\n- and our current reward cost per litre set against what a normal ArthaFuel customer actually gets back per litre.\n\nUse the most current base figures the folder supports, and on the face of the workbook state the source of every input and which competing figure for the same input you have set aside and why. Wallet sourcing sits with Hendra's team on P40/P13 — stay in our lane.\n\nKeep the deck sharp. Bambang does not sit through long decks.\n\nThanks, Marcus\n---\n\nDeliverables: a redesign economics model in Excel and a deck for Bambang. Save them as `petropoin_redesign_economics_model.xlsx` and `petropoin_loyalty_redesign_deck.pptx` in your output directory.",
+      "deliverables": [
+        "petropoin_redesign_economics_model.xlsx",
+        "petropoin_loyalty_redesign_deck.pptx"
+      ],
+      "difficulty_rationale": "Four stacked traps. (1) The earn rate: the Programme Overview documents 1 point per litre, but every points-bearing fuel row in the transaction extract carries exactly ten times the litres, and the handoff note states the redesign must be run on the recorded column. (2) The cost basis: reward cost per litre is the redemption value of the points issued (500 points = 5 litres at the indicative pump price, i.e. 135 SRP/point) net of the settled 38.2% breakage — the handoff note's own sanity checks ('a sixth of the fuel gross margin' on the documented rule, 'more than the whole of it' on the recorded column) only reconcile on that basis; the 45% breakage in the client leaflet is superseded. (3) The engaged base: the 90-day flag totals 675,040 against 4,219,000 enrolled on the v2 extract, not the leaflet's 600,000 of 2,100,000, and per-member frequency must be member-count-weighted across the flagged segments — an unweighted segment average lands at 92.5 fills/yr against 56.6, and the leaflet says 10–11. (4) The competitor side: 4.2% is ArthaElite-tier only (standard members get 2.1%), and the research file even pre-computes 567 SRP/litre off the headline rate. The obvious path — documented 1 point per litre, gross of breakage, published active/registered counts, headline cashback — misses every quantity by more than an order of magnitude in places.",
+      "checks": [
+        {
+          "key": "current_reward_cost_per_litre_srp",
+          "description": "Reward cost per litre of fuel earned on, on the recorded earn mechanic (10 points per litre from the transaction extract) valued at the redemption rule (500 points = 5 litres at 13,500 SRP/litre => 135 SRP/point) and net of the settled 38.2% actuarial breakage: 10 x 135 x 0.618 = 834.3 SRP/litre.",
+          "report_ask": "Report PetroPoin's reward cost per litre of fuel on which points are earned, as the programme currently operates, in SRP per litre.",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 834.3,
+          "tolerance": 0.5,
+          "weight": 1.0,
+          "derivation": "(pts / litres) * (5 * price / 500) * (1 - 38.2 / 100)",
+          "refs": [
+            {"name": "litres", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "E7"},
+            {"name": "pts", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "H7"},
+            {"name": "price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "recorded_rule", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "the points column is exactly ten times the litres column"},
+            {"name": "redemption_rule", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "38.2% of gross outstanding"}
+          ],
+          "decoy": {
+            "description": "Applying the documented one-point-per-litre earn rule at face redemption value, with no breakage haircut.",
+            "derivation": "1 * (5 * price2 / 500)",
+            "refs": [
+              {"name": "price2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+              {"name": "documented_rule", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"}
+            ]
+          }
+        },
+        {
+          "key": "doubled_earn_cost_pct_of_fuel_margin",
+          "description": "Reward cost per litre under a doubled earn rate (20 points per litre x 135 SRP/point x (1 - 0.382) = 1,668.6 SRP/litre) as a percentage of PetroNusa fuel gross margin per litre (513 SRP): 325.26%.",
+          "report_ask": "Report the reward cost per litre under a doubled earn rate as a percentage of PetroNusa's fuel gross margin per litre.",
+          "unit": "pct",
+          "check_type": "json_value",
+          "expected": 325.26,
+          "tolerance": 0.5,
+          "weight": 1.0,
+          "derivation": "2 * (pts / litres) * (5 * price / 500) * (1 - 38.2 / 100) / margin * 100",
+          "refs": [
+            {"name": "litres", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "E7"},
+            {"name": "pts", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "H7"},
+            {"name": "price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "margin", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "38.2% of gross outstanding"},
+            {"name": "recorded_rule", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "the points column is exactly ten times the litres column"}
+          ],
+          "decoy": {
+            "description": "Doubling the documented one-point-per-litre rule at face value against fuel gross margin, ignoring the recorded earn column and breakage.",
+            "derivation": "2 * 1 * (5 * price2 / 500) / margin2 * 100",
+            "refs": [
+              {"name": "price2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+              {"name": "margin2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B2"},
+              {"name": "documented_rule", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"}
+            ]
+          }
+        },
+        {
+          "key": "fills_per_year_engaged_cohort",
+          "description": "Member-count-weighted average monthly fuel fills across the twelve segments carrying the 90-day activity flag on the v2 CRM extract (3,182,416 weighted fills / 675,040 members = 4.7144 per month), annualised: 56.57 fills per year.",
+          "report_ask": "Report the average number of fuel fills per year for the members the current CRM extract records as having transacted within the last 90 days.",
+          "unit": "fills per year",
+          "check_type": "json_value",
+          "expected": 56.573,
+          "tolerance": 0.1,
+          "weight": 1.0,
+          "derivation": "(m1*f1 + m2*f2 + m3*f3 + m4*f4 + m5*f5 + m6*f6 + m7*f7 + m8*f8 + m9*f9 + m10*f10 + m11*f11 + m12*f12) / base90 * 12",
+          "refs": [
+            {"name": "m1", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C10"},
+            {"name": "f1", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F10"},
+            {"name": "m2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C11"},
+            {"name": "f2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F11"},
+            {"name": "m3", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C15"},
+            {"name": "f3", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F15"},
+            {"name": "m4", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C16"},
+            {"name": "f4", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F16"},
+            {"name": "m5", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C17"},
+            {"name": "f5", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F17"},
+            {"name": "m6", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C18"},
+            {"name": "f6", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F18"},
+            {"name": "m7", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C23"},
+            {"name": "f7", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F23"},
+            {"name": "m8", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C24"},
+            {"name": "f8", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F24"},
+            {"name": "m9", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C25"},
+            {"name": "f9", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F25"},
+            {"name": "m10", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C30"},
+            {"name": "f10", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F30"},
+            {"name": "m11", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C31"},
+            {"name": "f11", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F31"},
+            {"name": "m12", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C32"},
+            {"name": "f12", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "F32"},
+            {"name": "base90", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C36"}
+          ],
+          "decoy": {
+            "description": "Lifting the transactions-per-active-member figure published in the client-facing programme documentation.",
+            "derivation": "(10 + 11) / 2",
+            "refs": [
+              {"name": "published_freq", "file": "03_data/PetroPoin_Programme_Overview.docx", "quote": "Average transactions per active member"}
+            ]
+          }
+        },
+        {
+          "key": "net_points_overhang_per_engaged_member_srp",
+          "description": "FY2024 closing gross points balance of 87.4 SRP bn, net of the settled 38.2% breakage (54.0132 SRP bn), divided by the 675,040 members carrying the 90-day activity flag on the v2 extract: 80,014.8 SRP per engaged member.",
+          "report_ask": "Report the outstanding PetroPoin points liability per member recorded as having transacted within the last 90 days, in SRP per member.",
+          "unit": "SRP per member",
+          "check_type": "json_value",
+          "expected": 80014.8,
+          "tolerance": 20.0,
+          "weight": 1.0,
+          "derivation": "gross * 1000000000 * (1 - 38.2 / 100) / base90",
+          "refs": [
+            {"name": "gross", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Points_Economics_Inputs", "cell": "F8"},
+            {"name": "base90", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Programme_Health_Inputs", "cell": "C36"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "38.2% of gross outstanding"},
+            {"name": "superseded", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "The 45% figure that appears in the client-facing Programme Overview is a superseded 2021 estimate"}
+          ],
+          "decoy": {
+            "description": "Dividing the gross outstanding balance by the active member count published in the client-facing documentation, with no breakage haircut.",
+            "derivation": "gross2 * 1000000000 / 600000",
+            "refs": [
+              {"name": "gross2", "file": "02_handoffs/loyalty_current_state_working_summary.xlsx", "sheet": "Points_Economics_Inputs", "cell": "F8"},
+              {"name": "published_active", "file": "03_data/PetroPoin_CRM_Data_Availability.docx", "quote": "The active member count of 600,000"}
+            ]
+          }
+        },
+        {
+          "key": "reward_cost_vs_arthafuel_normal_customer_per_litre",
+          "description": "PetroPoin current reward cost per litre (834.3 SRP) less the cashback a standard ArthaFuel member receives (2.1% of the 13,500 SRP indicative pump price = 283.5 SRP/litre): 550.8 SRP per litre.",
+          "report_ask": "Report the difference between PetroPoin's current reward cost per litre and the cashback per litre a normal ArthaFuel customer receives, in SRP per litre (positive if PetroPoin's is larger).",
+          "unit": "SRP per litre",
+          "check_type": "json_value",
+          "expected": 550.8,
+          "tolerance": 1.0,
+          "weight": 1.0,
+          "derivation": "(pts / litres) * (5 * price / 500) * (1 - 38.2 / 100) - (2.1 / 100 * price)",
+          "refs": [
+            {"name": "litres", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "E7"},
+            {"name": "pts", "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx", "sheet": "Transactions_FY2024", "cell": "H7"},
+            {"name": "price", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+            {"name": "standard_rate", "file": "04_reference/competitor_pr_and_marketing_pack.docx", "quote": "base rate for standard members is 2.1%"},
+            {"name": "breakage", "file": "02_handoffs/loyalty_current_state_handoff_note.docx", "quote": "38.2% of gross outstanding"}
+          ],
+          "decoy": {
+            "description": "Setting the documented one-point-per-litre earn at face value against the analyst-derived ArthaFuel cashback cost computed off the 4.2% headline rate.",
+            "derivation": "1 * (5 * price2 / 500) - pub",
+            "refs": [
+              {"name": "price2", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B3"},
+              {"name": "pub", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "unit_economics", "cell": "B5"},
+              {"name": "headline", "file": "04_reference/competitor_economics_research.xlsx", "sheet": "headline_rates", "cell": "E2"}
+            ]
+          }
+        },
+        {
+          "key": "petropoin_redesign_economics_model.xlsx",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        },
+        {
+          "key": "petropoin_loyalty_redesign_deck.pptx",
+          "check_type": "file_exists",
+          "description": "deliverable exists",
+          "weight": 0.5
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,539 @@
+{
+ "env_id": "ME-A-01-P37-RL-02-petropoin-earn-rate-margin-headroom-h1",
+ "source_task_id": "ME-A-01-P37",
+ "occupation": "Financial and Investment Analysts",
+ "sector": "Finance and Insurance",
+ "title": "PetroPoin redesign \u2014 package cost, comparator basis and liability test",
+ "prompt": "You are Citra Widyastuti, Analyst at Aurelian & Co., PetroNusa engagement (loyalty workstream). It is early August 2025. The loyalty current-state assessment was accepted at SteerCo 4 in June; the current-state working summary, Priya's handoff note, the client's PetroPoin documentation, the CRM and transaction extracts, and the competitor research and marketing packs are all in the project folder.\n\nMarcus Whelan writes:\n\n---\nSubject: Loyalty redesign \u2014 the money case, for SteerCo 5\n\nCitra,\n\nSteerCo 5 is 21 August. Mei-Ling's steer to the steering group was, near enough: customers love points, so double the earn rate and layer in cashback like KhatuFuel, and that closes the gap with ArthaFuel on headline offer. Bambang is half-persuaded. I need the numbers, not the engagement story.\n\nFive things, and I want each one traceable to a source cell or a line in the folder:\n\n1. Where our member activity actually sits against ArthaFuel. Take PetroPoin off the FY2024 CRM extract carried in the current-state working summary, take ArthaFuel off the research file, and put the two side by side on one consistent activity definition. Give me the gap in percentage points.\n\n2. What PetroPoin's earn already costs us, expressed as a percentage of the fuel spend on the transaction that earns it, on an expected-cost basis to PetroNusa rather than at face redemption value. Do not take any single document's word for the mechanic \u2014 reconcile the programme documentation against what the transaction records show, and say in the deck which reading you are on.\n\n3. What it would cost us per litre, in SRP, to match KhatuFuel's cashback as it stands for an ordinary customer who pays nothing beyond the fuel itself.\n\n4. The two together \u2014 earn doubled as proposed, plus that cashback \u2014 as a percentage of the fuel gross margin on the earning litre, on the current indicative pump price and fuel gross margin in the research file.\n\n5. Separately, the outstanding points balance at FY2024 close, net of expected non-redemption, set against the Group's latest full-year EBITDA. Be careful which estimates in the folder are current and which have been superseded.\n\nShow me the money case. Bambang does not sit through long decks.\n\nThe wallet sourcing call sits with Hendra's team on P40/P13 \u2014 stay in our lane.\n\nThanks, Marcus\n---\n\nDeliverables: a redesign economics model in Excel with every build visible, and a short deck for Bambang. Save them as `petropoin_redesign_economics_model.xlsx` and `petropoin_loyalty_redesign_deck.pptx` in your output directory.",
+ "deliverables": [
+  "petropoin_redesign_economics_model.xlsx",
+  "petropoin_loyalty_redesign_deck.pptx"
+ ],
+ "checks": [
+  {
+   "key": "active_rate_gap_vs_arthafuel_pp",
+   "description": "ArthaFuel active rate on its published activity column (950,000/2,800,000 = 33.9286%) less PetroPoin's active rate on the same activity window from the v2 CRM extract (421,900/4,219,000 = 10.000%) = 23.93pp.",
+   "check_type": "json_value",
+   "expected": 23.93,
+   "tolerance": 0.05,
+   "weight": 1.0,
+   "derivation": "(af_active_k * 1000 / af_registered * 100) - (pn_active_30d / pn_enrolled * 100)",
+   "refs": [
+    {
+     "name": "af_active_k",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "headline_rates",
+     "cell": "D2",
+     "quote": null
+    },
+    {
+     "name": "af_registered",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "headline_rates",
+     "cell": "C2",
+     "quote": null
+    },
+    {
+     "name": "pn_active_30d",
+     "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+     "sheet": "Programme_Health_Inputs",
+     "cell": "C34",
+     "quote": null
+    },
+    {
+     "name": "pn_enrolled",
+     "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+     "sheet": "Programme_Health_Inputs",
+     "cell": "C33",
+     "quote": null
+    }
+   ],
+   "report_ask": "Report the gap, in percentage points, between ArthaFuel's active-member rate and PetroPoin's active-member rate.",
+   "unit": "pp",
+   "decoy": {
+    "description": "Comparing the client-facing twelve-month active figures (600,000 of over two million registered) against the competitor's 30-day active column.",
+    "derivation": "(pub_af_active_k * 1000 / pub_af_registered * 100) - (600000 / 2100000 * 100)",
+    "refs": [
+     {
+      "name": "pub_af_active_k",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "headline_rates",
+      "cell": "D2",
+      "quote": null
+     },
+     {
+      "name": "pub_af_registered",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "headline_rates",
+      "cell": "C2",
+      "quote": null
+     },
+     {
+      "name": "pub_pn",
+      "file": "04_reference/RDI_SariwonFuelRetail_LoyaltyPayments_Q42024_Extract.docx",
+      "sheet": null,
+      "cell": null,
+      "quote": "registered base of over two million members, of whom an estimated 600,000 transacted in the most recent twelve-month period"
+     }
+    ]
+   },
+   "blinded_key": null
+  },
+  {
+   "key": "current_earn_pct_of_fuel_spend_expected_cost",
+   "description": "Current earn valued at expected cost: recorded 10 points per litre (122 points on 12.2 litres) x 5 litres per 500 points redemption value x (1 - 0.382 approved breakage), divided by the pump spend on the same litre = 10 x 0.01 x 0.618 = 6.18% of fuel spend.",
+   "check_type": "json_value",
+   "expected": 6.18,
+   "tolerance": 0.02,
+   "weight": 1.0,
+   "derivation": "(pts / litres) * (5 * price / 500) * (1 - 0.382) / price * 100",
+   "refs": [
+    {
+     "name": "litres",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "E7",
+     "quote": null
+    },
+    {
+     "name": "pts",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "H7",
+     "quote": null
+    },
+    {
+     "name": "price",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "ratio_note",
+     "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "the points column is exactly ten times the litres column"
+    },
+    {
+     "name": "redemption_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"
+    },
+    {
+     "name": "breakage_note",
+     "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "estimate of 38.2% of gross outstanding"
+    }
+   ],
+   "report_ask": "Report PetroPoin's current earn as a percentage of the fuel spend on the earning transaction, measured at the cost PetroNusa expects to bear.",
+   "unit": "pct",
+   "decoy": {
+    "description": "Taking the documented one-point-per-litre rule and valuing points at full face redemption value with no breakage allowance.",
+    "derivation": "1 * (5 * price2 / 500) / price2 * 100",
+    "refs": [
+     {
+      "name": "price2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B3",
+      "quote": null
+     },
+     {
+      "name": "documented_rule",
+      "file": "03_data/PetroPoin_Programme_Overview.docx",
+      "sheet": null,
+      "cell": null,
+      "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+     }
+    ]
+   },
+   "blinded_key": null
+  },
+  {
+   "key": "khatufuel_match_cashback_cost_per_litre",
+   "description": "Cost per litre of matching the KhatuFuel cashback available to a customer paying nothing extra: 1.5% free-tier rate x 13,500 SRP indicative pump price = 202.5 SRP per litre.",
+   "check_type": "json_value",
+   "expected": 202.5,
+   "tolerance": 0.5,
+   "weight": 1.0,
+   "derivation": "0.015 * price",
+   "refs": [
+    {
+     "name": "price",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "free_tier_rate",
+     "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Free-tier cashback is 1.5%."
+    },
+    {
+     "name": "subscriber_condition",
+     "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "3.8% cashback rate applies to KhatuPlus subscribers only"
+    }
+   ],
+   "report_ask": "Report the per-litre cost, in SRP, of matching KhatuFuel's cashback for an ordinary PetroNusa customer.",
+   "unit": "SRP per litre",
+   "decoy": {
+    "description": "Lifting the published headline cashback rate (3.8%) and the pre-computed per-litre cost carried in the research file.",
+    "derivation": "khatu_headline / 100 * price2",
+    "refs": [
+     {
+      "name": "khatu_headline",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "headline_rates",
+      "cell": "E3",
+      "quote": null
+     },
+     {
+      "name": "price2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B3",
+      "quote": null
+     },
+     {
+      "name": "precomputed",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B6",
+      "quote": null
+     }
+    ]
+   },
+   "blinded_key": null
+  },
+  {
+   "key": "package_reward_cost_pct_of_fuel_gross_margin",
+   "description": "Doubled earn on the recorded rate at expected cost (2 x 10 x 135 x 0.618 = 1,668.6 SRP/litre) plus ordinary-customer cashback match (202.5 SRP/litre) = 1,871.1 SRP/litre, against fuel gross margin of 513 SRP/litre = 364.74%.",
+   "check_type": "json_value",
+   "expected": 364.74,
+   "tolerance": 0.6,
+   "weight": 1.0,
+   "derivation": "((2 * (pts / litres) * (5 * price / 500) * (1 - 0.382)) + 0.015 * price) / margin * 100",
+   "refs": [
+    {
+     "name": "litres",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "E7",
+     "quote": null
+    },
+    {
+     "name": "pts",
+     "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+     "sheet": "Transactions_FY2024",
+     "cell": "H7",
+     "quote": null
+    },
+    {
+     "name": "price",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "margin",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B2",
+     "quote": null
+    },
+    {
+     "name": "free_tier_rate",
+     "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Free-tier cashback is 1.5%."
+    },
+    {
+     "name": "redemption_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"
+    },
+    {
+     "name": "breakage_note",
+     "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "estimate of 38.2% of gross outstanding"
+    }
+   ],
+   "report_ask": "Report the total reward cost per earning litre under the proposed package as a percentage of the fuel gross margin on that litre.",
+   "unit": "pct",
+   "decoy": {
+    "description": "Doubling the documented one-point-per-litre rule at face redemption value and adding the published headline KhatuFuel cashback rate.",
+    "derivation": "((2 * 1 * (5 * price2 / 500)) + khatu_headline2 / 100 * price2) / margin2 * 100",
+    "refs": [
+     {
+      "name": "price2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B3",
+      "quote": null
+     },
+     {
+      "name": "margin2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B2",
+      "quote": null
+     },
+     {
+      "name": "khatu_headline2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "headline_rates",
+      "cell": "E3",
+      "quote": null
+     },
+     {
+      "name": "documented_rule",
+      "file": "03_data/PetroPoin_Programme_Overview.docx",
+      "sheet": null,
+      "cell": null,
+      "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+     }
+    ]
+   },
+   "blinded_key": null
+  },
+  {
+   "key": "net_points_liability_pct_of_group_ebitda",
+   "description": "Net outstanding points liability = 87.4 SRP bn x (1 - 0.382 approved breakage) = 54.0132 SRP bn; converted at the Dec-2024 reference rate of 15,800 SRP/USD = USD 3.4186M; against Group EBITDA (6.2% of USD 4,217M group revenue = USD 261.5M) = 1.31%.",
+   "check_type": "json_value",
+   "expected": 1.3075,
+   "tolerance": 0.01,
+   "weight": 1.0,
+   "derivation": "gross_bn * (1 - 0.382) * 1000000000 / 15800 / 1000000 / (revenue_usd_m * ebitda_margin_pct / 100) * 100",
+   "refs": [
+    {
+     "name": "gross_bn",
+     "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+     "sheet": "Points_Economics_Inputs",
+     "cell": "F8",
+     "quote": null
+    },
+    {
+     "name": "fx_note",
+     "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+     "sheet": "Points_Economics_Inputs",
+     "cell": "B16",
+     "quote": null
+    },
+    {
+     "name": "revenue_usd_m",
+     "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+     "sheet": "Points_Economics_Inputs",
+     "cell": "B19",
+     "quote": null
+    },
+    {
+     "name": "ebitda_margin_pct",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B10",
+     "quote": null
+    },
+    {
+     "name": "breakage_settled",
+     "file": "02_handoffs/loyalty_current_state_handoff_note.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "was approved at the May 2025 review and is now the rate the ledger carries as current"
+    }
+   ],
+   "report_ask": "Report the net outstanding points liability as a percentage of Group EBITDA.",
+   "unit": "pct",
+   "decoy": {
+    "description": "Setting the gross SRP bn balance against USD m EBITDA with the superseded ~45% breakage and no currency reconciliation.",
+    "derivation": "gross_bn2 * (1 - 0.45) / (revenue_usd_m2 * ebitda_margin_pct2 / 100) * 100",
+    "refs": [
+     {
+      "name": "gross_bn2",
+      "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+      "sheet": "Points_Economics_Inputs",
+      "cell": "F8",
+      "quote": null
+     },
+     {
+      "name": "revenue_usd_m2",
+      "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+      "sheet": "Points_Economics_Inputs",
+      "cell": "B19",
+      "quote": null
+     },
+     {
+      "name": "ebitda_margin_pct2",
+      "file": "04_reference/competitor_economics_research.xlsx",
+      "sheet": "unit_economics",
+      "cell": "B10",
+      "quote": null
+     },
+     {
+      "name": "superseded_breakage",
+      "file": "03_data/PetroPoin_Programme_Overview.docx",
+      "sheet": null,
+      "cell": null,
+      "quote": "Estimated share of issued points never redeemed (breakage)"
+     }
+    ]
+   },
+   "blinded_key": null
+  },
+  {
+   "key": "petropoin_redesign_economics_model.xlsx",
+   "description": "deliverable exists",
+   "check_type": "file_exists",
+   "expected": null,
+   "tolerance": 0.0,
+   "weight": 0.5,
+   "derivation": null,
+   "refs": [],
+   "report_ask": "",
+   "unit": "",
+   "decoy": null,
+   "blinded_key": null
+  },
+  {
+   "key": "petropoin_loyalty_redesign_deck.pptx",
+   "description": "deliverable exists",
+   "check_type": "file_exists",
+   "expected": null,
+   "tolerance": 0.0,
+   "weight": 0.5,
+   "derivation": null,
+   "refs": [],
+   "report_ask": "",
+   "unit": "",
+   "decoy": null,
+   "blinded_key": null
+  }
+ ],
+ "difficulty_rationale": "Four independent basis traps, all resolvable only by reading prose the obvious path skips. (a) The comparator's published activity column is a 30-day active count; the client-facing Programme Overview's 600,000/2,100,000 twelve-month figures are neither the same window nor the same registry as the v2 CRM extract (421,900 on 4,219,000), so the naive comparison understates the gap by ~18.6pp. (b) The documented earn rule is 1 point per litre; every fuel row in the FY2024 extract that carries points shows exactly ten times litres, and the handoff note flags the mechanic as unresolved and load-bearing. (c) The 3.8% KhatuFuel cashback headline in the research file (and its pre-computed 513 SRP/litre cost) is KhatuPlus-subscriber-only; the marketing pack states free-tier cashback is 1.5%, so the obvious lift overstates matching cost 2.5x. (d) Points must be costed at the 500-points-for-5-litres redemption rule net of the approved 38.2% breakage, not the superseded ~45% in the client pack; and the liability comparison requires reconciling SRP bn against USD M via the Dec-2024 reference rate, which the naive path ignores entirely (33% instead of 1.3%).",
+ "validation": {
+  "valid": false,
+  "reasons": [
+   "1/7 checks failed verification"
+  ],
+  "checks": [
+   {
+    "key": "active_rate_gap_vs_arthafuel_pp",
+    "ok": true,
+    "computed": 23.92857142857143,
+    "decoy_computed": 5.357142857142861,
+    "reasons": [],
+    "facts": [
+     "af_active_k: headline_rates!D2 = 950",
+     "af_registered: headline_rates!C2 = 2800000",
+     "pn_active_30d: Programme_Health_Inputs!C34 = 421900",
+     "pn_enrolled: Programme_Health_Inputs!C33 = 4219000",
+     "decoy pub_af_active_k: headline_rates!D2 = 950",
+     "decoy pub_af_registered: headline_rates!C2 = 2800000",
+     "decoy pub_pn: quote found"
+    ]
+   },
+   {
+    "key": "current_earn_pct_of_fuel_spend_expected_cost",
+    "ok": true,
+    "computed": 6.18,
+    "decoy_computed": 1.0,
+    "reasons": [],
+    "facts": [
+     "litres: Transactions_FY2024!E7 = 12.2",
+     "pts: Transactions_FY2024!H7 = 122",
+     "price: unit_economics!B3 = 13500",
+     "ratio_note: quote found",
+     "redemption_rule: quote found",
+     "breakage_note: quote found",
+     "decoy price2: unit_economics!B3 = 13500",
+     "decoy documented_rule: quote found"
+    ]
+   },
+   {
+    "key": "khatufuel_match_cashback_cost_per_litre",
+    "ok": true,
+    "computed": 202.5,
+    "decoy_computed": 513.0,
+    "reasons": [],
+    "facts": [
+     "price: unit_economics!B3 = 13500",
+     "free_tier_rate: quote found",
+     "subscriber_condition: quote found",
+     "decoy khatu_headline: headline_rates!E3 = 3.8",
+     "decoy price2: unit_economics!B3 = 13500",
+     "decoy precomputed: unit_economics!B6 = 513"
+    ]
+   },
+   {
+    "key": "package_reward_cost_pct_of_fuel_gross_margin",
+    "ok": true,
+    "computed": 364.7368421052632,
+    "decoy_computed": 152.63157894736844,
+    "reasons": [],
+    "facts": [
+     "litres: Transactions_FY2024!E7 = 12.2",
+     "pts: Transactions_FY2024!H7 = 122",
+     "price: unit_economics!B3 = 13500",
+     "margin: unit_economics!B2 = 513",
+     "free_tier_rate: quote found",
+     "redemption_rule: quote found",
+     "breakage_note: quote found",
+     "decoy price2: unit_economics!B3 = 13500",
+     "decoy margin2: unit_economics!B2 = 513",
+     "decoy khatu_headline2: headline_rates!E3 = 3.8",
+     "decoy documented_rule: quote found"
+    ]
+   },
+   {
+    "key": "net_points_liability_pct_of_group_ebitda",
+    "ok": false,
+    "computed": null,
+    "decoy_computed": null,
+    "reasons": [
+     "derivation failed: unbound name 'revenue_usd_m'"
+    ],
+    "facts": [
+     "gross_bn: Points_Economics_Inputs!F8 = 87.4",
+     "fx_note: Points_Economics_Inputs!B16 = '15,800'",
+     "revenue_usd_m: Points_Economics_Inputs!B19 = '4,217'",
+     "ebitda_margin_pct: unit_economics!B10 = 6.2",
+     "breakage_settled: quote found"
+    ]
+   },
+   {
+    "key": "petropoin_redesign_economics_model.xlsx",
+    "ok": true,
+    "computed": null,
+    "decoy_computed": null,
+    "reasons": [],
+    "facts": []
+   },
+   {
+    "key": "petropoin_loyalty_redesign_deck.pptx",
+    "ok": true,
+    "computed": null,
+    "decoy_computed": null,
+    "reasons": [],
+    "facts": []
+   }
+  ]
+ },
+ "harden_round": 1
+}

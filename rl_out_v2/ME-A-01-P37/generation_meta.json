@@ -1,0 +1,8 @@
+{
+ "source_task_dir": "/Users/marius/Documents/workbench/20260902_workbench_ME_nikita_final/ME-A-01-P37_vF",
+ "refdir": "/Users/marius/Documents/workbench/20260902_workbench_ME_nikita_final/ME-A-01-P37_vF/reference",
+ "model": "anthropic/claude-opus-5",
+ "base_url": "https://openrouter.ai/api/v1",
+ "n_requested": 3,
+ "n_returned": 3
+}

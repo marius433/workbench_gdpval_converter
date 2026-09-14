@@ -1,0 +1,26 @@
+[
+ {
+  "env_id": "ME-A-01-P17-RL-01-petronusa-premium-netback-bridge",
+  "model": "openrouter/anthropic/claude-opus-5",
+  "score": 1.0,
+  "solved": true,
+  "discarded": false,
+  "error": null
+ },
+ {
+  "env_id": "ME-A-01-P17-RL-02-petronusa-grade-ladder-state-take",
+  "model": "openrouter/anthropic/claude-opus-5",
+  "score": 1.0,
+  "solved": true,
+  "discarded": false,
+  "error": null
+ },
+ {
+  "env_id": "ME-A-01-P37-RL-03-petronusa-offer-comparability-benchmark-h1",
+  "model": "openrouter/anthropic/claude-opus-5",
+  "score": 1.0,
+  "solved": true,
+  "discarded": false,
+  "error": null
+ }
+]

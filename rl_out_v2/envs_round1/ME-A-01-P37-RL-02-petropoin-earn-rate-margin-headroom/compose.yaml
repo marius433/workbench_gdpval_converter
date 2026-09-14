@@ -1,0 +1,6 @@
+services:
+  default:
+    build: .
+    working_dir: /task
+    command: tail -f /dev/null
+    init: true

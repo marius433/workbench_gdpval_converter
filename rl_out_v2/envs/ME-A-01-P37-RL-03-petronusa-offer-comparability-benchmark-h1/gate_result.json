@@ -1,0 +1,9 @@
+{
+ "env_id": "ME-A-01-P37-RL-03-petronusa-offer-comparability-benchmark-h1",
+ "model": "openrouter/anthropic/claude-opus-5",
+ "score": 1.0,
+ "solved": true,
+ "discarded": false,
+ "error": null,
+ "solve_threshold": 0.8
+}

@@ -1,0 +1,298 @@
+[
+ {
+  "key": "arthafuel_standard_cashback_srp_per_litre",
+  "description": "ArthaFuel cashback available to a standard member = 2.1% of the current pump price = 283.5 SRP per litre.",
+  "check_type": "json_value",
+  "expected": 283.5,
+  "tolerance": 1.0,
+  "weight": 1.0,
+  "derivation": "2.1 / 100 * price",
+  "refs": [
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "standard_rate",
+    "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "base rate for standard members is 2.1%"
+   }
+  ],
+  "report_ask": "Report the ArthaFuel cashback a normal customer receives, expressed in SRP per litre at the current indicative pump price.",
+  "unit": "SRP per litre",
+  "decoy": {
+   "description": "Lifting the analyst-derived cashback cost per litre computed from the 4.2% headline rate.",
+   "derivation": "pub",
+   "refs": [
+    {
+     "name": "pub",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B5",
+     "quote": null
+    }
+   ]
+  },
+  "blinded_key": "result_01"
+ },
+ {
+  "key": "khatufuel_standard_cashback_srp_per_litre",
+  "description": "KhatuFuel cashback available without the paid subscription = 1.5% of the current pump price = 202.5 SRP per litre.",
+  "check_type": "json_value",
+  "expected": 202.5,
+  "tolerance": 1.0,
+  "weight": 1.0,
+  "derivation": "1.5 / 100 * price",
+  "refs": [
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "free_tier_rate",
+    "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "Free-tier cashback is 1.5%"
+   }
+  ],
+  "report_ask": "Report the KhatuFuel cashback a normal customer receives, expressed in SRP per litre at the current indicative pump price.",
+  "unit": "SRP per litre",
+  "decoy": {
+   "description": "Lifting the analyst-derived cashback cost per litre computed from the 3.8% subscriber headline rate.",
+   "derivation": "pub",
+   "refs": [
+    {
+     "name": "pub",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B6",
+     "quote": null
+    }
+   ]
+  },
+  "blinded_key": "result_02"
+ },
+ {
+  "key": "best_competitor_offer_pct_of_our_fuel_margin",
+  "description": "Stronger competitor offer on a normal-customer basis (ArthaFuel, 283.5 SRP/litre) as a percentage of PetroNusa fuel gross margin per litre (513 SRP) = 55.26%.",
+  "check_type": "json_value",
+  "expected": 55.263,
+  "tolerance": 0.4,
+  "weight": 1.0,
+  "derivation": "(2.1 / 100 * price) / margin * 100",
+  "refs": [
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "margin",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B2",
+    "quote": null
+   },
+   {
+    "name": "standard_rate",
+    "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "base rate for standard members is 2.1%"
+   }
+  ],
+  "report_ask": "Report the stronger of the two competitor customer offers as a percentage of PetroNusa's fuel gross margin per litre.",
+  "unit": "pct",
+  "decoy": {
+   "description": "Using the published 4.2% headline cashback rate against fuel gross margin.",
+   "derivation": "(4.2 / 100 * price2) / margin2 * 100",
+   "refs": [
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "margin2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B2",
+     "quote": null
+    },
+    {
+     "name": "headline",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "headline_rates",
+     "cell": "E2",
+     "quote": null
+    }
+   ]
+  },
+  "blinded_key": "result_03"
+ },
+ {
+  "key": "offer_gap_vs_best_competitor_pp",
+  "description": "PetroPoin member-facing reward value as a share of fuel spend = 10 points/litre x 135 SRP per point / 13,500 = 10.0%; minus the stronger competitor normal-customer offer of 2.1% = +7.9 percentage points.",
+  "check_type": "json_value",
+  "expected": 7.9,
+  "tolerance": 0.15,
+  "weight": 1.0,
+  "derivation": "((pts / litres) * (5 * price / 500) / price * 100) - 2.1",
+  "refs": [
+   {
+    "name": "litres",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "E7",
+    "quote": null
+   },
+   {
+    "name": "pts",
+    "file": "03_data/PetroPoin_membership_and_transactions_FY2024.xlsx",
+    "sheet": "Transactions_FY2024",
+    "cell": "H7",
+    "quote": null
+   },
+   {
+    "name": "price",
+    "file": "04_reference/competitor_economics_research.xlsx",
+    "sheet": "unit_economics",
+    "cell": "B3",
+    "quote": null
+   },
+   {
+    "name": "redemption_rule",
+    "file": "03_data/PetroPoin_Programme_Overview.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "500 points redeemed at any participating station in exchange for 5 litres of fuel"
+   },
+   {
+    "name": "standard_rate",
+    "file": "04_reference/competitor_pr_and_marketing_pack.docx",
+    "sheet": null,
+    "cell": null,
+    "quote": "base rate for standard members is 2.1%"
+   }
+  ],
+  "report_ask": "Report the gap between PetroNusa's member-facing reward value per unit of fuel spend and the stronger competitor customer offer, in percentage points (positive if PetroNusa is ahead).",
+  "unit": "pp",
+  "decoy": {
+   "description": "Comparing the documented one-point-per-litre earn rule against the published 4.2% headline cashback rate.",
+   "derivation": "(1 * (5 * price2 / 500) / price2 * 100) - headline",
+   "refs": [
+    {
+     "name": "price2",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "unit_economics",
+     "cell": "B3",
+     "quote": null
+    },
+    {
+     "name": "headline",
+     "file": "04_reference/competitor_economics_research.xlsx",
+     "sheet": "headline_rates",
+     "cell": "E2",
+     "quote": null
+    },
+    {
+     "name": "documented_rule",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "Members earn 1 PetroPoin point for every litre of fuel purchased at a participating station"
+    }
+   ]
+  },
+  "blinded_key": "result_04"
+ },
+ {
+  "key": "engaged_share_90d_pct",
+  "description": "Share of the enrolled base transacting inside a 90-day window on the current (v2) CRM extract = 675,040 / 4,219,000 = 16.0%.",
+  "check_type": "json_value",
+  "expected": 16.0,
+  "tolerance": 0.15,
+  "weight": 1.0,
+  "derivation": "active90 / enrolled * 100",
+  "refs": [
+   {
+    "name": "active90",
+    "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+    "sheet": "Programme_Health_Inputs",
+    "cell": "C36",
+    "quote": null
+   },
+   {
+    "name": "enrolled",
+    "file": "02_handoffs/loyalty_current_state_working_summary.xlsx",
+    "sheet": "Programme_Health_Inputs",
+    "cell": "C33",
+    "quote": null
+   }
+  ],
+  "report_ask": "Report the share of PetroNusa's enrolled member base that has transacted inside a 90-day window, as a percentage.",
+  "unit": "pct",
+  "decoy": {
+   "description": "Using the active and registered member counts published in the client-facing programme documentation.",
+   "derivation": "600000 / 2100000 * 100",
+   "refs": [
+    {
+     "name": "published_active",
+     "file": "03_data/PetroPoin_CRM_Data_Availability.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "The active member count of 600,000"
+    },
+    {
+     "name": "published_registered",
+     "file": "03_data/PetroPoin_Programme_Overview.docx",
+     "sheet": null,
+     "cell": null,
+     "quote": "2,100,000"
+    }
+   ]
+  },
+  "blinded_key": "result_05"
+ },
+ {
+  "key": "loyalty_offer_comparability_model.xlsx",
+  "description": "deliverable exists",
+  "check_type": "file_exists",
+  "expected": null,
+  "tolerance": 0.0,
+  "weight": 0.5,
+  "derivation": null,
+  "refs": [],
+  "report_ask": "",
+  "unit": "",
+  "decoy": null,
+  "blinded_key": null
+ },
+ {
+  "key": "loyalty_offer_comparability_note.docx",
+  "description": "deliverable exists",
+  "check_type": "file_exists",
+  "expected": null,
+  "tolerance": 0.0,
+  "weight": 0.5,
+  "derivation": null,
+  "refs": [],
+  "report_ask": "",
+  "unit": "",
+  "decoy": null,
+  "blinded_key": null
+ }
+]
